@@ -2,101 +2,123 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../coeur/theme/theme_quinca.dart'; // Import de ton fichier de thème
 import '../../logique/stock_controller.dart';
 import '../../data/produit.dart';
 
-class ArrivageScreen extends StatefulWidget {
+class ArrivagePage extends StatefulWidget {
   final StockController controller;
 
-  const ArrivageScreen({super.key, required this.controller});
+  const ArrivagePage({
+    super.key, 
+    required this.controller,
+  });
 
   @override
-  State<ArrivageScreen> createState() => _ArrivageScreenState();
+  State<ArrivagePage> createState() => _ArrivagePageState();
 }
 
-class _ArrivageScreenState extends State<ArrivageScreen> {
+class _ArrivagePageState extends State<ArrivagePage> {
+  // Petite fonction locale pour déterminer la couleur de l'icône selon le niveau de stock
+  Color _obtenirCouleurStock(Produit prod) {
+    if (prod.quantite == 0) {
+      return ThemeQuinca.rupture; // Rouge si rupture
+    } else if (prod.quantite <= prod.seuilAlerte) {
+      return ThemeQuinca.alerte; // Orange si alerte critique
+    }
+    return ThemeQuinca.succes; // Vert si stock suffisant
+  }
+
   @override
   Widget build(BuildContext context) {
-    // On écoute le contrôleur pour avoir les produits à jour
-    final listeProduits = widget.controller.produits;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: ThemeQuinca.fondGris,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
-        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
+        iconTheme: const IconThemeData(color: ThemeQuinca.texteFonce),
         title: Text(
           "Arrivage / Entrée Stock",
-          style: GoogleFonts.urbanist(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+          style: GoogleFonts.urbanist(fontSize: 18, fontWeight: FontWeight.bold, color: ThemeQuinca.texteFonce),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ================= PARCOURS B : ARTICLE INÉDIT =================
-            Card(
-              elevation: 0,
-              color: const Color(0xFFFFF7ED),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Color(0xFFFFEDD5)),
-              ),
-              child: ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Color(0xFFFFE4E6),
-                  child: Icon(Icons.add_box_outlined, color: Color(0xFFF97316)),
-                ),
-                title: Text(
-                  "Parcours B : Nouvel article Camion",
-                  style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, color: const Color(0xFFC2410C)),
-                ),
-                subtitle: const Text("L'article n'existe pas encore. Créer la fiche et ajouter le stock."),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFFF97316)),
-                onTap: () => _ouvrirFormulaireInedit(context),
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            // ================= PARCOURS A : SELECTION EXISTANTE =================
-            Text(
-              "Parcours A : Sélectionner l'article reçu",
-              style: GoogleFonts.urbanist(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF475569)),
-            ),
-            const SizedBox(height: 12),
+      body: ListenableBuilder(
+        listenable: widget.controller,
+        builder: (context, _) {
+          final listeProduits = widget.controller.produits;
 
-            Expanded(
-              child: listeProduits.isEmpty
-                  ? const Center(child: Text("Aucun produit disponible."))
-                  : ListView.builder(
-                      itemCount: listeProduits.length,
-                      itemBuilder: (context, index) {
-                        final prod = listeProduits[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: prod.couleurStatut.withOpacity(0.1),
-                              child: Icon(Icons.inventory_2_outlined, color: prod.couleurStatut, size: 18),
-                            ),
-                            title: Text(prod.nom, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                            subtitle: Text("Stock actuel : ${prod.quantite} u"),
-                            trailing: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF1A3B8B)),
-                            onTap: () => _ouvrirSaisieQuantiteExistante(context, prod),
-                          ),
-                        );
-                      },
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ================= PARCOURS B : ARTICLE INÉDIT =================
+                Card(
+                  elevation: 0,
+                  color: ThemeQuinca.alerte.withValues(alpha: 0.08), // Utilisation de alerte (Orange)
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: ThemeQuinca.alerte.withValues(alpha: 0.2)),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: ThemeQuinca.alerte.withValues(alpha: 0.15),
+                      child: const Icon(Icons.add_box_outlined, color: ThemeQuinca.alerte),
                     ),
+                    title: Text(
+                      "Nouvel article",
+                      style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, color: ThemeQuinca.alerte),
+                    ),
+                    subtitle: const Text("L'article n'existe pas encore. Créer la fiche et ajouter le stock."),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: ThemeQuinca.alerte),
+                    onTap: () => _ouvrirFormulaireInedit(context),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // ================= PARCOURS A : SELECTION EXISTANTE =================
+                Text(
+                  " Sélectionner l'article reçu",
+                  style: GoogleFonts.urbanist(fontSize: 14, fontWeight: FontWeight.bold, color: ThemeQuinca.texteFonce),
+                ),
+                const SizedBox(height: 12),
+
+                Expanded(
+                  child: listeProduits.isEmpty
+                      ? const Center(child: Text("Aucun produit disponible."))
+                      : ListView.builder(
+                          itemCount: listeProduits.length,
+                          itemBuilder: (context, index) {
+                            final prod = listeProduits[index];
+                            // Détermination de la couleur selon l'état du produit
+                            final couleurStatut = _obtenirCouleurStock(prod);
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: ThemeQuinca.bordure),
+                              ),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  // Couleur dynamique (Vert, Orange ou Rouge) selon le stock réel !
+                                  backgroundColor: couleurStatut.withValues(alpha: 0.1),
+                                  child: Icon(Icons.inventory_2_outlined, color: couleurStatut, size: 18),
+                                ),
+                                title: Text(prod.nom, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: ThemeQuinca.texteFonce)),
+                                subtitle: Text("Stock actuel : ${prod.quantite} u", style: const TextStyle(color: ThemeQuinca.texteSecondaire)),
+                                trailing: const Icon(Icons.add_circle_outline_rounded, color: ThemeQuinca.bleuPrincipal),
+                                onTap: () => _ouvrirSaisieQuantiteExistante(context, prod),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -108,7 +130,7 @@ class _ArrivageScreenState extends State<ArrivageScreen> {
     showDialog(
       context: contexte,
       builder: (contexte) => AlertDialog(
-        title: Text("Arrivage : ${produit.nom}", style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: Text("Arrivage : ${produit.nom}", style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16, color: ThemeQuinca.texteFonce)),
         content: TextField(
           controller: qteController,
           keyboardType: TextInputType.number,
@@ -120,22 +142,21 @@ class _ArrivageScreenState extends State<ArrivageScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(contexte),
-            child: const Text("Annuler", style: TextStyle(color: Colors.grey)),
+            child: const Text("Annuler", style: TextStyle(color: ThemeQuinca.texteSecondaire)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1A3B8B)),
+            style: ElevatedButton.styleFrom(backgroundColor: ThemeQuinca.bleuPrincipal),
             onPressed: () {
               int? qte = int.tryParse(qteController.text);
               if (qte != null && qte > 0) {
-                // On utilise le contrôleur pour modifier la donnée réelle
-                widget.controller.enregistrerArrivage(produit.reference, qte, "Gérant");
+                widget.controller.incrementerStock(produit.id, qte);
                 Navigator.pop(contexte);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Stock mis à jour : +$qte ${produit.nom}")),
                 );
               }
             },
-            child: const Text("Valider", style: TextStyle(color: Colors.white)),
+            child: const Text("Valider", style: TextStyle(color: ThemeQuinca.texteInverse)),
           ),
         ],
       ),
@@ -170,12 +191,12 @@ class _ArrivageScreenState extends State<ArrivageScreen> {
               children: [
                 Text(
                   "Fiche Nouvel Arrivage (Inédit)", 
-                  style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFFF97316))
+                  style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold, color: ThemeQuinca.alerte)
                 ),
                 const SizedBox(height: 16),
                 TextField(controller: nomCtrl, decoration: const InputDecoration(labelText: "Nom de l'article *", border: OutlineInputBorder())),
                 const SizedBox(height: 12),
-                TextField(controller: refCtrl, decoration: const InputDecoration(labelText: "Référence / Code Barre *", border: OutlineInputBorder())),
+                TextField(controller: refCtrl, decoration: const InputDecoration(labelText: "Référence ", border: OutlineInputBorder())),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -197,31 +218,23 @@ class _ArrivageScreenState extends State<ArrivageScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF97316)),
+                    style: ElevatedButton.styleFrom(backgroundColor: ThemeQuinca.bleuPrincipal), // Bouton principal en Bleu
                     onPressed: () {
                       if (nomCtrl.text.isNotEmpty && refCtrl.text.isNotEmpty && qteCtrl.text.isNotEmpty) {
                         int initialeQte = int.tryParse(qteCtrl.text) ?? 0;
                         
-                        // 1. On crée d'abord la fiche technique dans notre liste globale
-                        widget.controller.creerFicheCatalogue(
+                        widget.controller.nouveauProduit(
                           Produit(
-                            nom: nomCtrl.text,
-                            reference: refCtrl.text,
+                            id: refCtrl.text.trim(),
+                            nom: nomCtrl.text.trim(),
+                            reference: refCtrl.text.trim(),
                             categorie: "Inédit",
-                            quantite: initialeQte, // Injecte directement la quantité reçue
+                            quantite: initialeQte, 
                             prixAchat: double.tryParse(prixACtrl.text) ?? 0,
                             prixVente: double.tryParse(prixVCtrl.text) ?? 0,
                             seuilAlerte: int.tryParse(seuilCtrl.text) ?? 5,
                           ),
                         );
-
-                        // 2. On ajoute une trace propre dans l'historique de suivi
-                        widget.controller.historique.insert(0, {
-                          'produit': nomCtrl.text,
-                          'quantite': initialeQte,
-                          'auteur': 'Gérant (Parcours B)',
-                          'date': DateTime.now().toString().substring(0, 16),
-                        });
 
                         Navigator.pop(contexte);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -229,7 +242,7 @@ class _ArrivageScreenState extends State<ArrivageScreen> {
                         );
                       }
                     },
-                    child: const Text("Valider le bon d'entrée", style: TextStyle(color: Colors.white)),
+                    child: const Text("Valider le bon d'entrée", style: TextStyle(color: ThemeQuinca.texteInverse)),
                   ),
                 ),
                 const SizedBox(height: 20),

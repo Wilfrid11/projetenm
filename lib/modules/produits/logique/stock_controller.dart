@@ -1,44 +1,54 @@
+// lib/modules/produit/logique/stock_controller.dart
+
 import 'package:flutter/material.dart';
 import '../data/produit.dart';
 
 class StockController extends ChangeNotifier {
-  // Notre "Base de données" locale
-  final List<Produit> _produitsDuMagasin = [
-    Produit(nom: "Ciment CPJ 45", reference: "CIM-001", categorie: "Construction", quantite: 50, prixAchat: 4500, prixVente: 5000, seuilAlerte: 10),
-    Produit(nom: "Fer à béton 12mm", reference: "FER-012", categorie: "Quincaillerie", quantite: 5, prixAchat: 3000, prixVente: 3500, seuilAlerte: 15),
-  ];
+  // La vraie liste des produits, vide au démarrage de l'application
+  final List<Produit> _produits = [];
 
-  List<Produit> get produits => _produitsDuMagasin;
+  // Permet aux écrans de lire les produits
+  List<Produit> get produits => _produits;
 
-  // Historique des arrivages
-  final List<Map<String, dynamic>> historique = [];
+  // Liste des articles en alerte critique
+  List<Produit> get alertesCritiques => 
+      _produits.where((p) => p.quantite <= p.seuilAlerte).toList();
 
-  // ACTION 1 : Créer dans le catalogue
-  void creerFicheCatalogue(Produit p) {
-    _produitsDuMagasin.add(p);
-    notifyListeners(); // Actualise l'application partout
-  }
-
-  // ACTION 2 : Arrivage (Entrée de stock)
-  void enregistrerArrivage(String ref, int qte, String auteur) {
-    final p = _produitsDuMagasin.firstWhere((prod) => prod.reference == ref);
-    p.quantite += qte;
-    
-    historique.insert(0, {
-      'produit': p.nom,
-      'quantite': qte,
-      'auteur': auteur,
-      'date': DateTime.now().toString().substring(0, 16),
-    });
-    
+  // 1. AJOUTER UN NOUVEAU PRODUIT
+  void nouveauProduit(Produit produit) {
+    _produits.add(produit);
     notifyListeners();
   }
 
-  // ACTION 3 : Vente (Sortie de stock)
-  void effectuerVente(String ref, int qte) {
-    final p = _produitsDuMagasin.firstWhere((prod) => prod.reference == ref);
-    if (p.quantite >= qte) {
-      p.quantite -= qte;
+  // 2. ENREGISTRER UN ARRIVAGE (ENTRÉE DE STOCK)
+  void incrementerStock(String produitId, int quantiteAjoutee) {
+    final index = _produits.indexWhere((p) => p.id == produitId);
+    if (index != -1) {
+      _produits[index].quantite += quantiteAjoutee;
+      notifyListeners();
+    }
+  }
+
+  // 3. ENREGISTRER UNE VENTE (SORTIE DE STOCK SÉCURISÉE)
+  bool decrementerStock(String produitId, int quantiteVendue) {
+    final index = _produits.indexWhere((p) => p.id == produitId);
+    
+    if (index != -1) {
+      final produit = _produits[index];
+      if (produit.quantite >= quantiteVendue) {
+        produit.quantite -= quantiteVendue;
+        notifyListeners();
+        return true; // Vente acceptée
+      }
+    }
+    return false; // Échec : Stock insuffisant
+  }
+
+  // 4. AJUSTEMENT MANUEL (INVENTAIRE / CORRECTION)
+  void modifierQuantiteManuelle(String produitId, int nouvelleQuantite) {
+    final index = _produits.indexWhere((p) => p.id == produitId);
+    if (index != -1) {
+      _produits[index].quantite = nouvelleQuantite;
       notifyListeners();
     }
   }

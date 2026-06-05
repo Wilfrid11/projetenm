@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'modules/auth/presentation/login.dart';
+import '../modules/produits/logique/stock_controller.dart'; // Import du contrôleur de stock global
 
 void main() {
   runApp(const MyApp());
 }
+final StockController _mainStockController = StockController();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,7 +19,7 @@ class MyApp extends StatelessWidget {
         
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const Login(),
+      home: Login(stockController: _mainStockController),
       debugShowCheckedModeBanner: false,
     );
   }
