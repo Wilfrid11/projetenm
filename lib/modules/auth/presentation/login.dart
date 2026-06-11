@@ -6,6 +6,7 @@ import '../../produits/logique/stock_controller.dart';
 import '../../ventes/logique/vente_controller.dart'; // Import indispensable
 import '../data/mock.dart';
 import '../data/user.dart';
+import 'register_page.dart'; // ◄ AJOUT : Import indispensable pour la navigation
 
 class Login extends StatefulWidget {
   // On passe le stockController au Login pour qu'il puisse le donner à la RolePage
@@ -259,6 +260,41 @@ class _LoginState extends State<Login> {
                                   ),
                                 ),
                         ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ◄ SEUL AJOUT : Le lien vers l'inscription avec transmission du stockController
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Nouveau sur QuincaPro ? ",
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RegisterPage(
+                                    stockController: widget.stockController,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              "Créer un espace",
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFFD7E14),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -5,14 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../coeur/theme/theme_quinca.dart'; // Import de ton fichier de thème
 import '../../logique/stock_controller.dart';
 import '../../data/produit.dart';
+import '../../../historique/data/historique_models.dart';
 
 class ArrivagePage extends StatefulWidget {
   final StockController controller;
+  final String auteur;
 
-  const ArrivagePage({
-    super.key, 
-    required this.controller,
-  });
+  const ArrivagePage({super.key, required this.controller, required this.auteur});
 
   @override
   State<ArrivagePage> createState() => _ArrivagePageState();
@@ -39,7 +38,11 @@ class _ArrivagePageState extends State<ArrivagePage> {
         iconTheme: const IconThemeData(color: ThemeQuinca.texteFonce),
         title: Text(
           "Arrivage / Entrée Stock",
-          style: GoogleFonts.urbanist(fontSize: 18, fontWeight: FontWeight.bold, color: ThemeQuinca.texteFonce),
+          style: GoogleFonts.urbanist(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: ThemeQuinca.texteFonce,
+          ),
         ),
       ),
       body: ListenableBuilder(
@@ -58,28 +61,46 @@ class _ArrivagePageState extends State<ArrivagePage> {
                   color: ThemeQuinca.alerte.withValues(alpha: 0.08), // Utilisation de alerte (Orange)
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: ThemeQuinca.alerte.withValues(alpha: 0.2)),
+                    side: BorderSide(
+                      color: ThemeQuinca.alerte.withValues(alpha: 0.2),
+                    ),
                   ),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: ThemeQuinca.alerte.withValues(alpha: 0.15),
-                      child: const Icon(Icons.add_box_outlined, color: ThemeQuinca.alerte),
+                      child: const Icon(
+                        Icons.add_box_outlined,
+                        color: ThemeQuinca.alerte,
+                      ),
                     ),
                     title: Text(
                       "Nouvel article",
-                      style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, color: ThemeQuinca.alerte),
+                      style: GoogleFonts.urbanist(
+                        fontWeight: FontWeight.bold,
+                        color: ThemeQuinca.alerte,
+                      ),
                     ),
-                    subtitle: const Text("L'article n'existe pas encore. Créer la fiche et ajouter le stock."),
-                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: ThemeQuinca.alerte),
+                    subtitle: const Text(
+                      "L'article n'existe pas encore. Créer la fiche et ajouter le stock.",
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: ThemeQuinca.alerte,
+                    ),
                     onTap: () => _ouvrirFormulaireInedit(context),
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // ================= PARCOURS A : SELECTION EXISTANTE =================
                 Text(
                   " Sélectionner l'article reçu",
-                  style: GoogleFonts.urbanist(fontSize: 14, fontWeight: FontWeight.bold, color: ThemeQuinca.texteFonce),
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: ThemeQuinca.texteFonce,
+                  ),
                 ),
                 const SizedBox(height: 12),
 
@@ -104,12 +125,34 @@ class _ArrivagePageState extends State<ArrivagePage> {
                                 leading: CircleAvatar(
                                   // Couleur dynamique (Vert, Orange ou Rouge) selon le stock réel !
                                   backgroundColor: couleurStatut.withValues(alpha: 0.1),
-                                  child: Icon(Icons.inventory_2_outlined, color: couleurStatut, size: 18),
+                                  child: Icon(
+                                    Icons.inventory_2_outlined,
+                                    color: couleurStatut,
+                                    size: 18,
+                                  ),
                                 ),
-                                title: Text(prod.nom, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: ThemeQuinca.texteFonce)),
-                                subtitle: Text("Stock actuel : ${prod.quantite} u", style: const TextStyle(color: ThemeQuinca.texteSecondaire)),
-                                trailing: const Icon(Icons.add_circle_outline_rounded, color: ThemeQuinca.bleuPrincipal),
-                                onTap: () => _ouvrirSaisieQuantiteExistante(context, prod),
+                                title: Text(
+                                  prod.nom,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: ThemeQuinca.texteFonce,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "Stock actuel : ${prod.quantite} u",
+                                  style: const TextStyle(
+                                    color: ThemeQuinca.texteSecondaire,
+                                  ),
+                                ),
+                                trailing: const Icon(
+                                  Icons.add_circle_outline_rounded,
+                                  color: ThemeQuinca.bleuPrincipal,
+                                ),
+                                onTap: () => _ouvrirSaisieQuantiteExistante(
+                                  context,
+                                  prod,
+                                ),
                               ),
                             );
                           },
@@ -130,7 +173,14 @@ class _ArrivagePageState extends State<ArrivagePage> {
     showDialog(
       context: contexte,
       builder: (contexte) => AlertDialog(
-        title: Text("Arrivage : ${produit.nom}", style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16, color: ThemeQuinca.texteFonce)),
+        title: Text(
+          "Arrivage : ${produit.nom}",
+          style: GoogleFonts.urbanist(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: ThemeQuinca.texteFonce,
+          ),
+        ),
         content: TextField(
           controller: qteController,
           keyboardType: TextInputType.number,
@@ -142,21 +192,50 @@ class _ArrivagePageState extends State<ArrivagePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(contexte),
-            child: const Text("Annuler", style: TextStyle(color: ThemeQuinca.texteSecondaire)),
+            child: const Text(
+              "Annuler",
+              style: TextStyle(color: ThemeQuinca.texteSecondaire),
+            ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: ThemeQuinca.bleuPrincipal),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ThemeQuinca.bleuPrincipal,
+            ),
             onPressed: () {
               int? qte = int.tryParse(qteController.text);
               if (qte != null && qte > 0) {
-                widget.controller.incrementerStock(produit.id, qte);
+                // ON RECOPIE NOTRE FONCTION AVEC LE 3e ARGUMENT (L'HISTORIQUE)
+                widget.controller.validerArrivage(
+                  EntreeFournisseur(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    fournisseur:
+                        "Fournisseur Général", // Modifiable plus tard si tu ajoutes un champ texte
+                    dateArrivage:
+                        "05/06/2026 à ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}",
+                    auteur: widget.auteur,
+                    lignes: [
+                      LigneEntree(
+                        nomProduit: produit.nom,
+                        categorie: produit.categorie,
+                        quantiteRecue: qte,
+                      ),
+                    ],
+                  ),
+                );
+
                 Navigator.pop(contexte);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Stock mis à jour : +$qte ${produit.nom}")),
+
+                ScaffoldMessenger.of(contexte).showSnackBar(
+                  SnackBar(
+                    content: Text("Stock mis à jour : +$qte ${produit.nom}"),
+                  ),
                 );
               }
             },
-            child: const Text("Valider", style: TextStyle(color: ThemeQuinca.texteInverse)),
+            child: const Text(
+              "Valider",
+              style: TextStyle(color: ThemeQuinca.texteInverse),
+            ),
           ),
         ],
       ),
@@ -175,14 +254,16 @@ class _ArrivagePageState extends State<ArrivagePage> {
     showModalBottomSheet(
       context: contexte,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (contexte) {
         return Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(contexte).viewInsets.bottom, 
-            top: 20, 
-            left: 16, 
-            right: 16
+            bottom: MediaQuery.of(contexte).viewInsets.bottom,
+            top: 20,
+            left: 16,
+            right: 16,
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -190,27 +271,79 @@ class _ArrivagePageState extends State<ArrivagePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Fiche Nouvel Arrivage (Inédit)", 
-                  style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold, color: ThemeQuinca.alerte)
+                  "Fiche Nouvel Arrivage (Inédit)",
+                  style: GoogleFonts.urbanist(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: ThemeQuinca.alerte,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                TextField(controller: nomCtrl, decoration: const InputDecoration(labelText: "Nom de l'article *", border: OutlineInputBorder())),
+                TextField(
+                  controller: nomCtrl,
+                  decoration: const InputDecoration(
+                    labelText: "Nom de l'article *",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
                 const SizedBox(height: 12),
-                TextField(controller: refCtrl, decoration: const InputDecoration(labelText: "Référence ", border: OutlineInputBorder())),
+                TextField(
+                  controller: refCtrl,
+                  decoration: const InputDecoration(
+                    labelText: "Référence ",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: TextField(controller: prixACtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Prix Achat *", border: OutlineInputBorder()))),
+                    Expanded(
+                      child: TextField(
+                        controller: prixACtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Prix Achat *",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: TextField(controller: prixVCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Prix Vente *", border: OutlineInputBorder()))),
+                    Expanded(
+                      child: TextField(
+                        controller: prixVCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Prix Vente *",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: TextField(controller: qteCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Quantité livrée *", border: OutlineInputBorder()))),
+                    Expanded(
+                      child: TextField(
+                        controller: qteCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Quantité livrée *",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: TextField(controller: seuilCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Seuil d'alerte *", border: OutlineInputBorder()))),
+                    Expanded(
+                      child: TextField(
+                        controller: seuilCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Seuil d'alerte *",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -218,18 +351,22 @@ class _ArrivagePageState extends State<ArrivagePage> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: ThemeQuinca.bleuPrincipal), // Bouton principal en Bleu
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ThemeQuinca.bleuPrincipal,
+                    ), // Bouton principal en Bleu
                     onPressed: () {
-                      if (nomCtrl.text.isNotEmpty && refCtrl.text.isNotEmpty && qteCtrl.text.isNotEmpty) {
+                      if (nomCtrl.text.isNotEmpty &&
+                          refCtrl.text.isNotEmpty &&
+                          qteCtrl.text.isNotEmpty) {
                         int initialeQte = int.tryParse(qteCtrl.text) ?? 0;
-                        
+
                         widget.controller.nouveauProduit(
                           Produit(
                             id: refCtrl.text.trim(),
                             nom: nomCtrl.text.trim(),
                             reference: refCtrl.text.trim(),
                             categorie: "Inédit",
-                            quantite: initialeQte, 
+                            quantite: initialeQte,
                             prixAchat: double.tryParse(prixACtrl.text) ?? 0,
                             prixVente: double.tryParse(prixVCtrl.text) ?? 0,
                             seuilAlerte: int.tryParse(seuilCtrl.text) ?? 5,
@@ -238,11 +375,18 @@ class _ArrivagePageState extends State<ArrivagePage> {
 
                         Navigator.pop(contexte);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Nouvel article enregistré et stocké !")),
+                          const SnackBar(
+                            content: Text(
+                              "Nouvel article enregistré et stocké !",
+                            ),
+                          ),
                         );
                       }
                     },
-                    child: const Text("Valider le bon d'entrée", style: TextStyle(color: ThemeQuinca.texteInverse)),
+                    child: const Text(
+                      "Valider le bon d'entrée",
+                      style: TextStyle(color: ThemeQuinca.texteInverse),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),

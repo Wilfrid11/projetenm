@@ -19,6 +19,17 @@ class DepotAuth {
     return null;
   }
 
+  /// Enregistre un nouvel utilisateur dans la base locale (mémoire vive)
+  bool enregistrerNouvelUtilisateur(User user, String pin) {
+    final numeroComplet = user.telephone.startsWith('+') ? user.telephone : '+229${user.telephone}';
+    
+    if (_usersDB.containsKey(numeroComplet)) return false; // Le compte existe déjà
+
+    _usersDB[numeroComplet] = user;
+    _credentialsDB[numeroComplet] = pin;
+    return true;
+  }
+
   /// Met à jour le PIN du gérant et désactive le drapeau de premier login
   bool mettreAJourPin(String telephone, String nouveauPin) {
     final numeroComplet = telephone.startsWith('+') ? telephone : '+229$telephone';
@@ -31,10 +42,14 @@ class DepotAuth {
       final ancienUser = _usersDB[numeroComplet]!;
       _usersDB[numeroComplet] = User(
         id: ancienUser.id,
-        nomComplet: ancienUser.nomComplet,
+        nom: ancienUser.nom,
+        prenom: ancienUser.prenom,
+        ville: ancienUser.ville,
         telephone: ancienUser.telephone,
         role: ancienUser.role,
         nomBoutique: ancienUser.nomBoutique,
+        telephoneBoutique: ancienUser.telephoneBoutique, // Ajout du paramètre 'telephoneBoutique'
+        adresse: ancienUser.adresse, // Ajout du paramètre 'adresse'
         isFirstLogin: false, // Sécurité levée !
       );
       

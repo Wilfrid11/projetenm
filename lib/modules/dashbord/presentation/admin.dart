@@ -57,8 +57,9 @@ class DashboardAdmin extends StatelessWidget {
                 // ZONE DES CARTES KPI DYNAMIQUES
                 GridView.count(
                   crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  mainAxisExtent: 100,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
@@ -101,7 +102,7 @@ class DashboardAdmin extends StatelessWidget {
 
   Widget _buildKpiCard(String titre, String valeur, IconData icone, Color couleur) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -118,19 +119,19 @@ class DashboardAdmin extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icone, color: couleur, size: 28),
+          Icon(icone, color: couleur, size: 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 valeur,
-                style: GoogleFonts.urbanist(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                style: GoogleFonts.urbanist(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
                 titre,
-                style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
+                style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
               ),
             ],
           ),

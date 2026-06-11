@@ -6,18 +6,21 @@ import '../../auth/data/user.dart';
 import '../../produits/logique/stock_controller.dart';
 import '../../ventes/logique/vente_controller.dart'; 
 import '../composants/alerte.dart';
-import '../data/mock_dashboard.dart';
+import '../composants/notification_stock.dart';
+import '../../produits/presentation/arrivage.dart'; // Import ajouté
 
 class GerantPage extends StatelessWidget {
   final User user;
   final StockController stockController;
   final VenteController venteController; 
+  final VoidCallback? onAllerAuxVentes; // Pour changer d'onglet
 
   const GerantPage({
     super.key, 
     required this.user, 
     required this.stockController,
     required this.venteController, 
+    this.onAllerAuxVentes,
   });
 
   @override
@@ -25,9 +28,12 @@ class GerantPage extends StatelessWidget {
     return ListenableBuilder(
       listenable: Listenable.merge([stockController, venteController]),
       builder: (context, _) {
-        // CORRECTION TEMPORAIRE : On met une valeur fixe (ex: 5) ou 0 pour les ventes du jour
-        // afin d'éviter de bloquer la compilation avec une variable inconnue.
-        final nombreVentesJour = 5; 
+        final maintenant = DateTime.now();
+        final dateAujourdhui = "${maintenant.day.toString().padLeft(2, '0')}/${maintenant.month.toString().padLeft(2, '0')}/${maintenant.year}";
+        
+        final nombreVentesJour = venteController.historiqueVentes
+            .where((v) => v.dateVente.startsWith(dateAujourdhui))
+            .length;
         
         // Utilisation de ton getter fonctionnel pour les alertes de stock
         final articlesCritiques = stockController.alertesCritiques.length;
@@ -51,9 +57,14 @@ class GerantPage extends StatelessWidget {
                 const SizedBox(height: 12),
                 
                 _actionFlashBtn("Nouvelle vente (panier)", Icons.add_shopping_cart_rounded, const Color(0xFFF97316), () {
-                  // Action panier
+                  if (onAllerAuxVentes != null) onAllerAuxVentes!();
                 }),
-                _actionFlashBtn("Ajouter / Réceptionner produit", Icons.unarchive_rounded, const Color(0xFFEA580C), () {}),
+                _actionFlashBtn("Ajouter / Réceptionner produit", Icons.unarchive_rounded, const Color(0xFFEA580C), () {
+                  Navigator.push(context, MaterialPageRoute(builder: (c) => ArrivagePage(
+                    controller: stockController,
+                    auteur: "${user.prenom} ${user.nom}",
+                  )));
+                }),
                 _actionFlashBtn("Bon de sortie de stock", Icons.local_shipping_outlined, const Color(0xFFF97316), () {}),
                 const SizedBox(height: 24),
                 
@@ -63,13 +74,13 @@ class GerantPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 
-                ...mockAlertesStock.map((alerte) {
+                ...stockController.alertesCritiques.map((produit) {
                   return AlerteCard(
-                    nom: alerte['nom'],
-                    statut: alerte['statut'],
-                    label: alerte['label'],
-                    couleur: alerte['couleur'],
-                    icone: alerte['icone'],
+                    nom: produit.nom,
+                    statut: "Quantité restante : ${produit.quantite}",
+                    label: produit.quantite <= 0 ? "RUPTURE" : "CRITIQUE",
+                    couleur: produit.quantite <= 0 ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
+                    icone: Icons.warning_amber_rounded,
                   );
                 }),
               ],
@@ -100,7 +111,7 @@ class GerantPage extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user.nomComplet, style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text("${user.prenom} ${user.nom}", style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                   Container(
                     margin: const EdgeInsets.only(top: 4),
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -113,8 +124,7 @@ class GerantPage extends StatelessWidget {
           ),
           Row(
             children: [
-              const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 24),
-            
+              NotificationStock(controller: stockController),
             ],
           ),
         ],
@@ -134,7 +144,8 @@ class GerantPage extends StatelessWidget {
 
   Widget _statCard(String titre, String valeur, IconData icone, Color couleur) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 110,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -143,11 +154,11 @@ class GerantPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icone, color: couleur, size: 24),
-          const SizedBox(height: 12),
-          Text(valeur, style: GoogleFonts.urbanist(fontSize: 28, fontWeight: FontWeight.bold, color: couleur)),
-          const SizedBox(height: 4),
-          Text(titre, style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B))),
+          Icon(icone, color: couleur, size: 22),
+          const SizedBox(height: 8),
+          Text(valeur, style: GoogleFonts.urbanist(fontSize: 22, fontWeight: FontWeight.bold, color: couleur)),
+          const SizedBox(height: 2),
+          Text(titre, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B))),
         ],
       ),
     );

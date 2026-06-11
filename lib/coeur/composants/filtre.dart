@@ -8,12 +8,14 @@ class Filtre extends StatefulWidget {
   final String categorieInitiale; // Permet de synchroniser l'état avec la page parente
   final Function(String) onRechercheChange;
   final Function(String) onCategorieChange;
+  final Widget? trailing;
 
   const Filtre({
     super.key,
     this.categorieInitiale = "Tout",
     required this.onRechercheChange,
     required this.onCategorieChange,
+    this.trailing,
   });
 
   @override
@@ -46,34 +48,44 @@ class _FiltreState extends State<Filtre> {
         Container(
           color: ThemeQuinca.bleuPrincipal,
           padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-          child: Container(
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white, 
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: widget.onRechercheChange,
-              decoration: InputDecoration(
-                hintText: "Rechercher un produit...",
-                hintStyle: GoogleFonts.inter(color: ThemeQuinca.texteSecondaire, fontSize: 14),
-                prefixIcon: const Icon(Icons.search, color: ThemeQuinca.texteSecondaire),
-                // Bouton de nettoyage dynamique (X)
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: ThemeQuinca.texteSecondaire, size: 20),
-                        onPressed: () {
-                          _searchController.clear();
-                          widget.onRechercheChange("");
-                          setState(() {}); // Met à jour l'état pour cacher le bouton X
-                        },
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: widget.onRechercheChange,
+                    decoration: InputDecoration(
+                      hintText: "Rechercher un produit...",
+                      hintStyle: GoogleFonts.inter(color: ThemeQuinca.texteSecondaire, fontSize: 14),
+                      prefixIcon: const Icon(Icons.search, color: ThemeQuinca.texteSecondaire),
+                      // Bouton de nettoyage dynamique (X)
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, color: ThemeQuinca.texteSecondaire, size: 20),
+                              onPressed: () {
+                                _searchController.clear();
+                                widget.onRechercheChange("");
+                                setState(() {}); // Met à jour l'état pour cacher le bouton X
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              if (widget.trailing != null) ...[
+                const SizedBox(width: 12),
+                widget.trailing!,
+              ],
+            ],
           ),
         ),
 

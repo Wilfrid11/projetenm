@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:quinca_pro/modules/produits/presentation/onglets/catalogue.dart';
 import '../../../coeur/theme/theme_quinca.dart';
+import '../../auth/data/user.dart';
 import '../logique/stock_controller.dart';
-import '../presentation/onglets/catalogue.dart'; // Correction chemin d'import
-import '../presentation/onglets/arrivage.dart';  // Correction chemin d'import
-import '../../auth/data/user.dart'; // Import nécessaire pour passer l'utilisateur au CataloguePage
-
+import '../../produits/presentation/onglets/historique_entrees.dart'; // Import pour la page d'historique des entrées
+import '../../produits/presentation/onglets/arrivage.dart'; // 👈 Ajoutez cet import
 class MenuLateral extends StatelessWidget {
   final StockController stockController;
   final User user; // 👈 1. Ajout de la propriété user
@@ -94,7 +94,27 @@ class MenuLateral extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => ArrivagePage(
-                    controller: stockController, // Parfaitement aligné sur le constructeur d'ArrivagePage
+                    controller: stockController,
+                    auteur: user.nom, // On passe l'auteur de l'arrivage
+                    // Note: L'ancienne page d'arrivage (onglets/arrivage.dart) est maintenant obsolète.
+                    // Elle peut être supprimée si elle n'est plus utilisée ailleurs.
+                  ),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.history_toggle_off_rounded, color: Color(0xFF1A3B8B)),
+            title: const Text("Historique des Entrées", style: TextStyle(fontWeight: FontWeight.w600)),
+            onTap: () {
+              Navigator.pop(context); // 1. Ferme d'abord le menu de côté
+              
+              // 2. Redirige vers la page d'historique des entrées
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HistoriqueEntreesPage(
+                    controller: stockController, // On lui passe le contrôleur requis
                   ),
                 ),
               );

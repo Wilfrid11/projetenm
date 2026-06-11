@@ -37,6 +37,49 @@ class HookAuth extends ChangeNotifier {
     }
   }
 
+  /// Gère l'inscription d'un nouvel utilisateur
+  Future<bool> sinscrire({
+    required String nom,
+    required String prenom,
+    required String telephone,
+    required String boutique,
+    required String adresse,
+    required String ville,
+    required String telBoutique,
+    required String pin,
+  }) async {
+    _setLoading(true);
+    _clearError();
+
+    // Simulation d'un délai réseau
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    final nouvelUser = User(
+      id: "ID-${DateTime.now().millisecondsSinceEpoch}",
+      nom: nom,
+      prenom: prenom,
+      telephone: telephone,
+      role: 'admin',
+      nomBoutique: boutique,
+      adresse: adresse,
+      ville: ville,
+      telephoneBoutique: telBoutique,
+      isFirstLogin: false,
+    );
+
+    final succes = _depot.enregistrerNouvelUtilisateur(nouvelUser, pin);
+
+    if (succes) {
+      _currentUser = nouvelUser;
+      _setLoading(false);
+      return true;
+    } else {
+      _errorMessage = "Ce numéro de téléphone est déjà utilisé.";
+      _setLoading(false);
+      return false;
+    }
+  }
+
   /// Force la modification du PIN pour les comptes temporaires
   Future<bool> modifierPremierPin(String nouveauPin) async {
     if (_currentUser == null) return false;

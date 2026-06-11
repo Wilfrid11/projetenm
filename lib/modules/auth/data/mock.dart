@@ -10,18 +10,26 @@ const Map<String, String> mockCredentials = {
 const Map<String, User> mockUsers = {
   "+22997000000": User(
     id: "USR-001",
-    nomComplet: "Kofi MENSAH",
+    nom: "MENSAH",
+    prenom: "Kofi",
     telephone: "+22997000000",
     role: "admin",
     nomBoutique: "Quincaillerie Centrale Pro",
+    telephoneBoutique: "+22921300000", // Numéro de la boutique
+    adresse: "Cotonou, Bénin", // Ajout d'une adresse par défaut
+    ville: "Cotonou",
     isFirstLogin: false,
   ),
   "+22996000000": User(
     id: "USR-002",
-    nomComplet: "Amos AGBOSSOU",
+    nom: "AGBOSSOU",
+    prenom: "Amos",
     telephone: "+22996000000",
     role: "gerant",
     nomBoutique: "Quincaillerie Étoile de Parakou", // Lié à la boutique gérée
+    telephoneBoutique: "+22923600000", // Numéro de la boutique
+    adresse: "Parakou, Bénin", // Ajout d'une adresse par défaut
+    ville: "Parakou",
     isFirstLogin: true,
   ),
 };
