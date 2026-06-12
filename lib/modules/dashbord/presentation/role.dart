@@ -37,8 +37,8 @@ class _RolePageState extends State<RolePage> {
   Widget _recupererPage() {
     switch (_currentIndex) {
       case 0:
-        // Filtrage de la page d'accueil selon le rôle de l'utilisateur connecté
-        if (widget.user.role == 'admin') {
+        // Contrôle du rôle pour l'affichage du Dashboard
+        if (widget.user.isAdmin) {
           return DashboardAdmin(
             stockController: widget.stockController,
             venteController: widget.venteController,

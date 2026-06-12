@@ -6,8 +6,8 @@ import 'package:quinca_pro/modules/produits/presentation/onglets/catalogue.dart'
 import '../../../coeur/theme/theme_quinca.dart';
 import '../../auth/data/user.dart';
 import '../logique/stock_controller.dart';
-import '../../produits/presentation/onglets/historique_entrees.dart'; // Import pour la page d'historique des entrées
-import '../../produits/presentation/onglets/arrivage.dart'; // 👈 Ajoutez cet import
+import '../presentation/onglets/historique_entrees.dart'; // Import pour la page d'historique des entrées
+import '../presentation/onglets/arrivage.dart'; // Import corrigé
 class MenuLateral extends StatelessWidget {
   final StockController stockController;
   final User user; // 👈 1. Ajout de la propriété user
@@ -95,7 +95,7 @@ class MenuLateral extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => ArrivagePage(
                     controller: stockController,
-                    user: user, // On passe l'objet User complet
+                    user: user,
                     // Note: L'ancienne page d'arrivage (onglets/arrivage.dart) est maintenant obsolète.
                     // Elle peut être supprimée si elle n'est plus utilisée ailleurs.
                   ),

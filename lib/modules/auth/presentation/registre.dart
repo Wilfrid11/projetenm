@@ -82,7 +82,7 @@ class _RegistrePageState extends State<RegistrePage> {
       );
 
       if (succes && mounted) {
-        Navigator.pushReplacementNamed(context, '/role');
+        Navigator.pop(context); // Redirige vers la page de connexion
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(widget.authHook.errorMessage ?? "Erreur d'inscription")),

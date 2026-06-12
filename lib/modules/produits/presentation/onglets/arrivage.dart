@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../coeur/theme/theme_quinca.dart'; // Import de ton fichier de thème
 import '../../logique/stock_controller.dart';
 import '../../data/produit.dart';
-import '../../../../historique/data/historique_models.dart';
-import '../../../../auth/data/user.dart'; // Import du modèle User
+import '../../../historique/data/historique_models.dart'; // Chemin d'import corrigé
+import '../../../auth/data/user.dart'; // Chemin d'import corrigé
 
 class ArrivagePage extends StatefulWidget {
   final StockController controller;

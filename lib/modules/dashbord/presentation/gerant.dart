@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/data/user.dart';
 import '../../produits/logique/stock_controller.dart';
 import '../../ventes/logique/vente_controller.dart'; 
-import '../../../coeur/theme/theme_quinca.dart'; // Import du thème
+import '../../../coeur/theme/theme_quinca.dart'; // Chemin d'import corrigé
 import '../../produits/presentation/alertes_stock.dart'; // Import de la page d'alertes
 import '../../produits/presentation/onglets/arrivage.dart'; // Import du nouvel arrivage
 
@@ -44,10 +44,10 @@ class GerantPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(),
+                _buildHeader(context),
                 const SizedBox(height: 24),
                 
-                _buildZoneStats(nombreVentesJour, articlesCritiques),
+                _buildZoneStats(context, nombreVentesJour, articlesCritiques),
                 const SizedBox(height: 24),
                 
                 Text(
@@ -56,16 +56,16 @@ class GerantPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 
-                _actionFlashBtn("Nouvelle vente (panier)", Icons.add_shopping_cart_rounded, const Color(0xFFF97316), () {
+                _actionFlashBtn(context, "Nouvelle vente (panier)", Icons.add_shopping_cart_rounded, ThemeQuinca.alerte, () {
                   if (onAllerAuxVentes != null) onAllerAuxVentes!();
                 }),
-                _actionFlashBtn("Ajouter / Réceptionner produit", Icons.unarchive_rounded, const Color(0xFFEA580C), () {
+                _actionFlashBtn(context, "Ajouter / Réceptionner produit", Icons.unarchive_rounded, ThemeQuinca.alerte, () {
                   Navigator.push(context, MaterialPageRoute(builder: (c) => ArrivagePage(
                     controller: stockController,
                     user: user,
                   )));
                 }),
-                _actionFlashBtn("Bon de sortie de stock", Icons.local_shipping_outlined, const Color(0xFFF97316), () {}),
+                _actionFlashBtn(context, "Bon de sortie de stock", Icons.local_shipping_outlined, ThemeQuinca.alerte, () {}),
                 const SizedBox(height: 24),
                 
                 Text(
@@ -82,7 +82,7 @@ class GerantPage extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text("Aucun produit en alerte pour le moment.", style: ThemeQuinca.corpsTexte),
+                    child: Text("Aucun produit en alerte pour le moment.", style: ThemeQuinca.corpsTexte.copyWith(color: ThemeQuinca.texteSecondaire)),
                   )
                 else
                   ListView.builder(
@@ -108,11 +108,11 @@ class GerantPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E3A8A),
+        color: ThemeQuinca.bleuPrincipal,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -128,12 +128,12 @@ class GerantPage extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("${user.prenom} ${user.nom}", style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text("${user.prenom} ${user.nom}", style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 16, color: Colors.white)),
                   Container(
                     margin: const EdgeInsets.only(top: 4),
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
-                    child: Text(user.role.toUpperCase(), style: GoogleFonts.inter(fontSize: 11, color: Colors.white)),
+                    child: Text(user.role.toUpperCase(), style: ThemeQuinca.corpsTexte.copyWith(fontSize: 11, color: Colors.white)),
                   ),
                 ],
               ),
@@ -177,46 +177,46 @@ class GerantPage extends StatelessWidget {
     );
   }
 
-  Widget _buildZoneStats(int ventes, int critiques) {
+  Widget _buildZoneStats(BuildContext context, int ventes, int critiques) {
     return Row(
       children: [
-        Expanded(child: _statCard("Ventes du jour", "$ventes", Icons.receipt_long_rounded, const Color(0xFF10B981))),
+        Expanded(child: _statCard(context, "Ventes du jour", "$ventes", Icons.receipt_long_rounded, ThemeQuinca.succes)),
         const SizedBox(width: 16),
-        Expanded(child: _statCard("Articles critiques", "$critiques", Icons.warning_amber_rounded, const Color(0xFFF59E0B))),
+        Expanded(child: _statCard(context, "Articles critiques", "$critiques", Icons.warning_amber_rounded, ThemeQuinca.alerte)),
       ],
     );
   }
 
-  Widget _statCard(String titre, String valeur, IconData icone, Color couleur) {
+  Widget _statCard(BuildContext context, String titre, String valeur, IconData icone, Color couleur) {
     return Container(
       height: 110,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: ThemeQuinca.bordure),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icone, color: couleur, size: 22),
           const SizedBox(height: 8),
-          Text(valeur, style: GoogleFonts.urbanist(fontSize: 22, fontWeight: FontWeight.bold, color: couleur)),
+          Text(valeur, style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 22, color: couleur)),
           const SizedBox(height: 2),
-          Text(titre, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B))),
+          Text(titre, style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12)),
         ],
       ),
     );
   }
 
-  Widget _actionFlashBtn(String libelle, IconData icone, Color couleurIcone, VoidCallback auClic) {
+  Widget _actionFlashBtn(BuildContext context, String libelle, IconData icone, Color couleurIcone, VoidCallback auClic) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       height: 64,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: ThemeQuinca.bordure),
       ),
       child: InkWell(
         onTap: auClic,
@@ -227,7 +227,7 @@ class GerantPage extends StatelessWidget {
             children: [
               Icon(icone, color: couleurIcone, size: 28),
               const SizedBox(width: 16),
-              Text(libelle, style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A))),
+              Text(libelle, style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 16, fontWeight: FontWeight.w600)),
             ],
           ),
         ),

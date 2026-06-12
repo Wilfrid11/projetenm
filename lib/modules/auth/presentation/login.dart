@@ -67,8 +67,9 @@ class _LoginState extends State<Login> {
               venteController: VenteController(
                 stockController: widget.stockController,
                 boutiqueId: utilisateurAConnecter.boutiqueId,
-              ), // On crée le contrôleur proprement ici
-            ), // La ligne en trop a été supprimée, l'erreur va disparaître !
+              ),
+              userController: _userController, // Passage du userController
+            ),
           ),
         );
       } else {

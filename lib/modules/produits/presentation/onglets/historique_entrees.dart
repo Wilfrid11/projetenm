@@ -111,8 +111,8 @@ class HistoriqueEntreesPage extends StatelessWidget {
                   ],
                 ),
               );
-            },);
-        }
-    );
+            },
+          );
+        });
   }
 }

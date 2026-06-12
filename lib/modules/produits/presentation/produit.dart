@@ -69,10 +69,10 @@ class _ProduitPageState extends State<ProduitPage> with SingleTickerProviderStat
         return Scaffold(
           backgroundColor: ThemeQuinca.fondGris,
           appBar: AppBar(
-            backgroundColor: ThemeQuinca.bleuPrincipal,
-            elevation: 0,
-            iconTheme: const IconThemeData(color: ThemeQuinca.texteInverse),
-            title: Text("Gestion de Stock", style: ThemeQuinca.titrePrincipal.copyWith(color: Colors.white, fontSize: 18)),
+            backgroundColor: Colors.white,
+            elevation: 0.5,
+            iconTheme: const IconThemeData(color: ThemeQuinca.texteFonce),
+            title: Text("Gestion de Stock", style: ThemeQuinca.titrePrincipal.copyWith(color: ThemeQuinca.texteFonce, fontSize: 18)),
             actions: [
               if (_isActionActive)
                 IconButton(
@@ -85,6 +85,8 @@ class _ProduitPageState extends State<ProduitPage> with SingleTickerProviderStat
               controller: _tabController,
               indicatorColor: ThemeQuinca.alerte,
               indicatorWeight: 3,
+              labelColor: ThemeQuinca.bleuPrincipal,
+              unselectedLabelColor: ThemeQuinca.texteSecondaire,
               labelStyle: ThemeQuinca.corpsTexte.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
               tabs: const [
                 Tab(text: "Catalogue", icon: Icon(Icons.playlist_add_rounded, size: 20)),
@@ -93,7 +95,7 @@ class _ProduitPageState extends State<ProduitPage> with SingleTickerProviderStat
               ],
             ),
           ),
-          drawer: MenuLateral(stockController: widget.stockController, user: widget.user),
+          // Drawer retiré comme demandé
           body: _isActionActive 
               ? TabBarView(
                   controller: _tabController,

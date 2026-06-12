@@ -51,13 +51,15 @@ class _CataloguePageState extends State<CataloguePage> {
   void _enregistrerTout() {
     int ajoutes = 0;
     for (var ligne in _lignes) {
-      if (ligne["nom"]!.text.isNotEmpty && ligne["ref"]!.text.isNotEmpty) {
+      String nom = ligne["nom"]!.text.trim();
+      String ref = ligne["ref"]!.text.trim();
+      if (nom.isNotEmpty && ref.isNotEmpty) {
         widget.controller.nouveauProduit(
           Produit(
-            id: ligne["ref"]!.text.trim(),
+            id: "PROD-${DateTime.now().microsecondsSinceEpoch}-${ajoutes}", // Génération d'un ID unique
             boutiqueId: widget.user.boutiqueId,
-            nom: ligne["nom"]!.text.trim(),
-            reference: ligne["ref"]!.text.trim(),
+            nom: nom,
+            reference: ref,
             categorie: ligne["cat"]!.text.isEmpty ? "Général" : ligne["cat"]!.text.trim(),
             quantite: int.tryParse(ligne["stock"]!.text) ?? 0,
             prixAchat: double.tryParse(ligne["prixA"]!.text) ?? 0,
