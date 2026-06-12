@@ -2,6 +2,7 @@
 
 class Produit {
   final String id;
+  final String boutiqueId;
   final String reference;
   final String nom;
   final String categorie;
@@ -12,6 +13,7 @@ class Produit {
 
   Produit({
     required this.id,
+    required this.boutiqueId,
     required this.reference,
     required this.nom,
     required this.categorie,

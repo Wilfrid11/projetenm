@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../coeur/theme/theme_quinca.dart';
+import '../../../coeur/composants/btn_principal.dart';
 import '../logique/hook.dart';
+import '../../produits/logique/stock_controller.dart';
 
 class RegistrePage extends StatefulWidget {
   final HookAuth authHook;
-  const RegistrePage({super.key, required this.authHook});
+  final StockController stockController;
+  const RegistrePage({super.key, required this.authHook, required this.stockController});
 
   @override
   State<RegistrePage> createState() => _RegistrePageState();
@@ -116,7 +119,7 @@ class _RegistrePageState extends State<RegistrePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Votre Quincaillerie", style: GoogleFonts.urbanist(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text("Votre Quincaillerie", style: ThemeQuinca.titrePrincipal),
           const SizedBox(height: 20),
           _buildField("Nom de l'établissement", _boutiqueController, Icons.store_outlined),
           _buildField("Adresse complète", _adresseController, Icons.location_on_outlined),
@@ -140,7 +143,7 @@ class _RegistrePageState extends State<RegistrePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Compte Administrateur", style: GoogleFonts.urbanist(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text("Compte Administrateur", style: ThemeQuinca.titrePrincipal),
           const SizedBox(height: 20),
           _buildField("Nom", _nomController, Icons.person_outline),
           _buildField("Prénom", _prenomController, Icons.badge_outlined),
@@ -167,27 +170,21 @@ class _RegistrePageState extends State<RegistrePage> {
         children: [
           const Icon(Icons.verified_user_outlined, size: 80, color: ThemeQuinca.bleuPrincipal),
           const SizedBox(height: 24),
-          Text("Offre de bienvenue", style: GoogleFonts.urbanist(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text("Offre de bienvenue", style: ThemeQuinca.titrePrincipal),
           const SizedBox(height: 12),
           Text(
             "En créant votre compte aujourd'hui, vous profitez de 14 jours d'essai gratuit sur le forfait Pro.",
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: ThemeQuinca.texteSecondaire),
+            style: ThemeQuinca.corpsTexte,
           ),
           const SizedBox(height: 40),
           ListenableBuilder(
             listenable: widget.authHook,
             builder: (context, child) {
-              return SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: widget.authHook.isLoading ? null : _procederALinscription,
-                  style: ElevatedButton.styleFrom(backgroundColor: ThemeQuinca.bleuPrincipal),
-                  child: widget.authHook.isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Confirmer la création", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
+              return BtnPrincipal(
+                texte: "Confirmer la création",
+                onPressed: _procederALinscription,
+                isLoading: widget.authHook.isLoading,
               );
             },
           ),
@@ -198,17 +195,9 @@ class _RegistrePageState extends State<RegistrePage> {
   }
 
   Widget _btnAction(String label, VoidCallback action) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: action,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: ThemeQuinca.bleuPrincipal,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
+    return BtnPrincipal(
+      texte: label,
+      onPressed: action,
     );
   }
 
@@ -219,26 +208,8 @@ class _RegistrePageState extends State<RegistrePage> {
         controller: controller,
         obscureText: obscure,
         keyboardType: keyboard,
-        decoration: _inputDecoration(label, icon),
+        decoration: ThemeQuinca.inputDecoration(label: label, icone: icon),
         validator: (v) => (v == null || v.isEmpty) ? "Champ obligatoire" : null,
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: GoogleFonts.inter(color: ThemeQuinca.texteSecondaire, fontSize: 14),
-      prefixIcon: Icon(icon, color: ThemeQuinca.bleuPrincipal),
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: ThemeQuinca.bordure),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: ThemeQuinca.bordure),
       ),
     );
   }

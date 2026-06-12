@@ -5,13 +5,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../coeur/theme/theme_quinca.dart'; // Import de ton fichier de thème
 import '../../logique/stock_controller.dart';
 import '../../data/produit.dart';
-import '../../../historique/data/historique_models.dart';
+import '../../../../historique/data/historique_models.dart';
+import '../../../../auth/data/user.dart'; // Import du modèle User
 
 class ArrivagePage extends StatefulWidget {
   final StockController controller;
-  final String auteur;
+  final User user; // On passe l'objet User complet
 
-  const ArrivagePage({super.key, required this.controller, required this.auteur});
+  const ArrivagePage({super.key, required this.controller, required this.user});
 
   @override
   State<ArrivagePage> createState() => _ArrivagePageState();
@@ -30,140 +31,121 @@ class _ArrivagePageState extends State<ArrivagePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ThemeQuinca.fondGris,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        iconTheme: const IconThemeData(color: ThemeQuinca.texteFonce),
-        title: Text(
-          "Arrivage / Entrée Stock",
-          style: GoogleFonts.urbanist(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: ThemeQuinca.texteFonce,
-          ),
-        ),
-      ),
-      body: ListenableBuilder(
-        listenable: widget.controller,
-        builder: (context, _) {
-          final listeProduits = widget.controller.produits;
+    return ListenableBuilder(listenable: widget.controller, builder: (context, _) {
+      final listeProduits = widget.controller.produits;
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ================= PARCOURS B : ARTICLE INÉDIT =================
-                Card(
-                  elevation: 0,
-                  color: ThemeQuinca.alerte.withValues(alpha: 0.08), // Utilisation de alerte (Orange)
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: ThemeQuinca.alerte.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: ThemeQuinca.alerte.withValues(alpha: 0.15),
-                      child: const Icon(
-                        Icons.add_box_outlined,
-                        color: ThemeQuinca.alerte,
-                      ),
-                    ),
-                    title: Text(
-                      "Nouvel article",
-                      style: GoogleFonts.urbanist(
-                        fontWeight: FontWeight.bold,
-                        color: ThemeQuinca.alerte,
-                      ),
-                    ),
-                    subtitle: const Text(
-                      "L'article n'existe pas encore. Créer la fiche et ajouter le stock.",
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 14,
-                      color: ThemeQuinca.alerte,
-                    ),
-                    onTap: () => _ouvrirFormulaireInedit(context),
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= PARCOURS B : ARTICLE INÉDIT =================
+            Card(
+              elevation: 0,
+              color: ThemeQuinca.alerte.withOpacity(0.08), // Utilisation de alerte (Orange)
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color: ThemeQuinca.alerte.withOpacity(0.2),
+                ),
+              ),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: ThemeQuinca.alerte.withOpacity(0.15),
+                  child: const Icon(
+                    Icons.add_box_outlined,
+                    color: ThemeQuinca.alerte,
                   ),
                 ),
-                const SizedBox(height: 24),
-
-                // ================= PARCOURS A : SELECTION EXISTANTE =================
-                Text(
-                  " Sélectionner l'article reçu",
+                title: Text(
+                  "Nouvel article",
                   style: GoogleFonts.urbanist(
-                    fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: ThemeQuinca.texteFonce,
+                    color: ThemeQuinca.alerte,
                   ),
                 ),
-                const SizedBox(height: 12),
-
-                Expanded(
-                  child: listeProduits.isEmpty
-                      ? const Center(child: Text("Aucun produit disponible."))
-                      : ListView.builder(
-                          itemCount: listeProduits.length,
-                          itemBuilder: (context, index) {
-                            final prod = listeProduits[index];
-                            // Détermination de la couleur selon l'état du produit
-                            final couleurStatut = _obtenirCouleurStock(prod);
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: ThemeQuinca.bordure),
-                              ),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  // Couleur dynamique (Vert, Orange ou Rouge) selon le stock réel !
-                                  backgroundColor: couleurStatut.withValues(alpha: 0.1),
-                                  child: Icon(
-                                    Icons.inventory_2_outlined,
-                                    color: couleurStatut,
-                                    size: 18,
-                                  ),
-                                ),
-                                title: Text(
-                                  prod.nom,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: ThemeQuinca.texteFonce,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  "Stock actuel : ${prod.quantite} u",
-                                  style: const TextStyle(
-                                    color: ThemeQuinca.texteSecondaire,
-                                  ),
-                                ),
-                                trailing: const Icon(
-                                  Icons.add_circle_outline_rounded,
-                                  color: ThemeQuinca.bleuPrincipal,
-                                ),
-                                onTap: () => _ouvrirSaisieQuantiteExistante(
-                                  context,
-                                  prod,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                subtitle: const Text(
+                  "L'article n'existe pas encore. Créer la fiche et ajouter le stock.",
                 ),
-              ],
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: ThemeQuinca.alerte,
+                ),
+                onTap: () => _ouvrirFormulaireInedit(context),
+              ),
             ),
-          );
-        },
-      ),
-    );
+            const SizedBox(height: 24),
+
+            // ================= PARCOURS A : SELECTION EXISTANTE =================
+            Text(
+              " Sélectionner l'article reçu",
+              style: GoogleFonts.urbanist(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: ThemeQuinca.texteFonce,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            Expanded(
+              child: listeProduits.isEmpty
+                  ? const Center(child: Text("Aucun produit disponible."))
+                  : ListView.builder(
+                      itemCount: listeProduits.length,
+                      itemBuilder: (context, index) {
+                        final prod = listeProduits[index];
+                        // Détermination de la couleur selon l'état du produit
+                        final couleurStatut = _obtenirCouleurStock(prod);
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: ThemeQuinca.bordure),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              // Couleur dynamique (Vert, Orange ou Rouge) selon le stock réel !
+                              backgroundColor: couleurStatut.withOpacity(0.1),
+                              child: Icon(
+                                Icons.inventory_2_outlined,
+                                color: couleurStatut,
+                                size: 18,
+                              ),
+                            ),
+                            title: Text(
+                              prod.nom,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: ThemeQuinca.texteFonce,
+                              ),
+                            ),
+                            subtitle: Text(
+                              "Stock actuel : ${prod.quantite} u",
+                              style: const TextStyle(
+                                color: ThemeQuinca.texteSecondaire,
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.add_circle_outline_rounded,
+                              color: ThemeQuinca.bleuPrincipal,
+                            ),
+                            onTap: () => _ouvrirSaisieQuantiteExistante(
+                              context,
+                              prod,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   // BOÎTE DE DIALOGUE : PARCOURS A (Ajout sur produit existant)
@@ -208,11 +190,11 @@ class _ArrivagePageState extends State<ArrivagePage> {
                 widget.controller.validerArrivage(
                   EntreeFournisseur(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    boutiqueId: widget.user.boutiqueId, // Added boutiqueId
                     fournisseur:
                         "Fournisseur Général", // Modifiable plus tard si tu ajoutes un champ texte
-                    dateArrivage:
-                        "05/06/2026 à ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}",
-                    auteur: widget.auteur,
+                    dateArrivage: "${DateTime.now().day.toString().padLeft(2, '0')}/${DateTime.now().month.toString().padLeft(2, '0')}/${DateTime.now().year} à ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}",
+                    auteur: "${widget.user.prenom} ${widget.user.nom}", // Use user's name
                     lignes: [
                       LigneEntree(
                         nomProduit: produit.nom,
@@ -363,9 +345,10 @@ class _ArrivagePageState extends State<ArrivagePage> {
                         widget.controller.nouveauProduit(
                           Produit(
                             id: refCtrl.text.trim(),
+                            boutiqueId: widget.user.boutiqueId, // Added boutiqueId
                             nom: nomCtrl.text.trim(),
                             reference: refCtrl.text.trim(),
-                            categorie: "Inédit",
+                            categorie: "Inédit", // TODO: Add category selection
                             quantite: initialeQte,
                             prixAchat: double.tryParse(prixACtrl.text) ?? 0,
                             prixVente: double.tryParse(prixVCtrl.text) ?? 0,

@@ -54,12 +54,15 @@ class HookAuth extends ChangeNotifier {
     // Simulation d'un délai réseau
     await Future.delayed(const Duration(milliseconds: 800));
 
+    final generatedBoutiqueId = "BTQ-${DateTime.now().millisecondsSinceEpoch}";
+
     final nouvelUser = User(
       id: "ID-${DateTime.now().millisecondsSinceEpoch}",
       nom: nom,
       prenom: prenom,
       telephone: telephone,
       role: 'admin',
+      boutiqueId: generatedBoutiqueId,
       nomBoutique: boutique,
       adresse: adresse,
       ville: ville,

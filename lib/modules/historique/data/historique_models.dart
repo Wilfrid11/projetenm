@@ -20,6 +20,7 @@ class LigneEntree {
 /// Représente le bloc complet d'un arrivage fournisseur
 class EntreeFournisseur {
   final String id;
+  final String boutiqueId;
   final String fournisseur;
   final String dateArrivage; // Date et heure de l'entrée
   final String auteur;       // Le gérant qui a validé
@@ -27,6 +28,7 @@ class EntreeFournisseur {
 
   EntreeFournisseur({
     required this.id,
+    required this.boutiqueId,
     required this.fournisseur,
     required this.dateArrivage,
     required this.auteur,
@@ -44,24 +46,28 @@ class LigneVente {
   final String categorie;
   final int quantiteVendue;
   final double prixUnitaire;
+  final double prixAchat;
 
   LigneVente({
     required this.nomProduit,
     required this.categorie,
     required this.quantiteVendue,
     required this.prixUnitaire,
+    required this.prixAchat,
   });
 }
 
 /// Représente une vente complète encaissée
 class VenteRealisee {
   final String numRecu;
+  final String boutiqueId;
   final String dateVente;
   final String moyenPaiement; // Ex: Espèces, Momo (MTN)
   final List<LigneVente> panier; // Les articles achetés
 
   VenteRealisee({
     required this.numRecu,
+    required this.boutiqueId,
     required this.dateVente,
     required this.moyenPaiement,
     required this.panier,

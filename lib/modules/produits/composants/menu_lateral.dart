@@ -95,7 +95,7 @@ class MenuLateral extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => ArrivagePage(
                     controller: stockController,
-                    auteur: user.nom, // On passe l'auteur de l'arrivage
+                    user: user, // On passe l'objet User complet
                     // Note: L'ancienne page d'arrivage (onglets/arrivage.dart) est maintenant obsolète.
                     // Elle peut être supprimée si elle n'est plus utilisée ailleurs.
                   ),

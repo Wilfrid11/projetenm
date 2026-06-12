@@ -5,6 +5,12 @@ import '../data/produit.dart';
 import '../../historique/data/historique_models.dart'; // ◄ ON IMPORTE NOS MODÈLES ICI
 
 class StockController extends ChangeNotifier {
+  String? _boutiqueId;
+  String get boutiqueId => _boutiqueId!; // Expose boutiqueId
+
+  /// Définit la boutique active (Appelé après la connexion)
+  void initialiserBoutique(String id) => _boutiqueId = id;
+
   // La vraie liste des produits, vide au démarrage de l'application
   final List<Produit> _produits = [];
 
@@ -17,9 +23,17 @@ class StockController extends ChangeNotifier {
   // ◄ NOUVEAU : Permet à ton écran d'historique de lire les arrivages
   List<EntreeFournisseur> get historiqueEntrees => _historiqueEntrees;
 
-  // Liste des articles en alerte critique
+  // Liste des articles en rupture totale (Quantité == 0)
+  List<Produit> get produitsEnRupture => 
+      _produits.where((p) => p.estEnRupture).toList();
+
+  // Liste des articles en alerte (0 < Quantité <= seuil)
+  List<Produit> get produitsEnAlerte => 
+      _produits.where((p) => p.estEnAlerte).toList();
+
+  // Liste combinée pour le dashboard Gérant (Ruptures + Alertes)
   List<Produit> get alertesCritiques => 
-      _produits.where((p) => p.quantite <= p.seuilAlerte).toList();
+      _produits.where((p) => p.estEnRupture || p.estEnAlerte).toList();
 
   // 1. AJOUTER UN NOUVEAU PRODUIT
   void nouveauProduit(Produit produit) {

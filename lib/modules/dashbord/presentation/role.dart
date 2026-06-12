@@ -5,6 +5,7 @@ import '../../../coeur/theme/theme_quinca.dart'; // ◄ Centralisation de ta cha
 import '../../auth/data/user.dart';
 import '../../produits/logique/stock_controller.dart'; 
 import '../../ventes/logique/vente_controller.dart';
+import '../../auth/logique/user_controller.dart';
 import '../../produits/presentation/produit.dart';
 import '../../ventes/presentation/vente.dart';
 import '../../ventes/presentation/historique_ventes.dart'; // ◄ AJOUTÉ : Importation indispensable pour HistoriqueVentesPage
@@ -15,12 +16,14 @@ class RolePage extends StatefulWidget {
   final User user;
   final StockController stockController;
   final VenteController venteController;
+  final UserController userController;
 
   const RolePage({
     super.key,
     required this.user,
     required this.stockController,
     required this.venteController,
+    required this.userController,
   });
 
   @override
@@ -39,6 +42,8 @@ class _RolePageState extends State<RolePage> {
           return DashboardAdmin(
             stockController: widget.stockController,
             venteController: widget.venteController,
+            userController: widget.userController,
+            user: widget.user,
           );
         } else {
           // Ajusté selon tes commentaires : GerantPage prend uniquement user et stockController
@@ -52,6 +57,7 @@ class _RolePageState extends State<RolePage> {
       case 1:
         return ProduitPage(
           stockController: widget.stockController,
+          venteController: widget.venteController,
           user: widget.user,
         );
       case 2:

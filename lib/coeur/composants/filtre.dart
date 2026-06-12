@@ -62,7 +62,7 @@ class _FiltreState extends State<Filtre> {
                     onChanged: widget.onRechercheChange,
                     decoration: InputDecoration(
                       hintText: "Rechercher un produit...",
-                      hintStyle: GoogleFonts.inter(color: ThemeQuinca.texteSecondaire, fontSize: 14),
+                      hintStyle: ThemeQuinca.corpsTexte,
                       prefixIcon: const Icon(Icons.search, color: ThemeQuinca.texteSecondaire),
                       // Bouton de nettoyage dynamique (X)
                       suffixIcon: _searchController.text.isNotEmpty
@@ -117,7 +117,7 @@ class _FiltreState extends State<Filtre> {
                   child: Center(
                     child: Text(
                       cat,
-                      style: GoogleFonts.inter(
+                      style: ThemeQuinca.corpsTexte.copyWith(
                         fontSize: 13, 
                         fontWeight: estSelectionne ? FontWeight.bold : FontWeight.w500, 
                         color: estSelectionne ? ThemeQuinca.texteInverse : ThemeQuinca.texteSecondaire,

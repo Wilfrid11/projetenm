@@ -12,17 +12,7 @@ class HistoriqueEntreesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ThemeQuinca.fondGris,
-      appBar: AppBar(
-        backgroundColor: ThemeQuinca.bleuPrincipal,
-        iconTheme: const IconThemeData(color: ThemeQuinca.texteInverse),
-        title: Text(
-          "Historique des Entrées",
-          style: GoogleFonts.urbanist(fontSize: 18, fontWeight: FontWeight.bold, color: ThemeQuinca.texteInverse),
-        ),
-      ),
-      body: ListenableBuilder(
+    return ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
           final entrees = controller.historiqueEntrees;
@@ -60,11 +50,11 @@ class HistoriqueEntreesPage extends StatelessWidget {
                   ),
                   title: Text(
                     entree.fournisseur,
-                    style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 14, color: ThemeQuinca.texteFonce),
+                    style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 14),
                   ),
                   subtitle: Text(
                     "Le ${entree.dateArrivage} • Par : ${entree.auteur}",
-                    style: GoogleFonts.inter(fontSize: 11, color: ThemeQuinca.texteSecondaire),
+                    style: ThemeQuinca.corpsTexte.copyWith(fontSize: 11),
                   ),
                   // Le bouton poubelle appelle la fonction de nettoyage du contrôleur
                   trailing: IconButton(
@@ -83,8 +73,8 @@ class HistoriqueEntreesPage extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("Produit / Catégorie", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: ThemeQuinca.texteSecondaire)),
-                                Text("Quantité Reçue", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: ThemeQuinca.texteSecondaire)),
+                                Text("Produit / Catégorie", style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
+                                Text("Quantité Reçue", style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
@@ -98,19 +88,19 @@ class HistoriqueEntreesPage extends StatelessWidget {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(ligne.nomProduit, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500)),
+                                      Text(ligne.nomProduit, style: ThemeQuinca.corpsTexte.copyWith(fontSize: 13, fontWeight: FontWeight.w500, color: ThemeQuinca.texteFonce)),
                                       const SizedBox(height: 4),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(color: ThemeQuinca.fondGris, borderRadius: BorderRadius.circular(4)),
-                                        child: Text(ligne.categorie, style: GoogleFonts.inter(fontSize: 10, color: ThemeQuinca.texteSecondaire)),
+                                        child: Text(ligne.categorie, style: ThemeQuinca.corpsTexte.copyWith(fontSize: 10)),
                                       ),
                                     ],
                                   ),
                                 ),
                                 Text(
                                   "${ligne.quantiteRecue}",
-                                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: ThemeQuinca.bleuPrincipal),
+                                  style: ThemeQuinca.corpsTexte.copyWith(fontSize: 14, fontWeight: FontWeight.bold, color: ThemeQuinca.bleuPrincipal),
                                 ),
                               ],
                             ),
@@ -121,10 +111,8 @@ class HistoriqueEntreesPage extends StatelessWidget {
                   ],
                 ),
               );
-            },
-          );
-        },
-      ),
+            },);
+        }
     );
   }
 }

@@ -5,9 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/data/user.dart';
 import '../../produits/logique/stock_controller.dart';
 import '../../ventes/logique/vente_controller.dart'; 
-import '../composants/alerte.dart';
-import '../composants/notification_stock.dart';
-import '../../produits/presentation/arrivage.dart'; // Import ajouté
+import '../../../coeur/theme/theme_quinca.dart'; // Import du thème
+import '../../produits/presentation/alertes_stock.dart'; // Import de la page d'alertes
+import '../../produits/presentation/onglets/arrivage.dart'; // Import du nouvel arrivage
 
 class GerantPage extends StatelessWidget {
   final User user;
@@ -62,7 +62,7 @@ class GerantPage extends StatelessWidget {
                 _actionFlashBtn("Ajouter / Réceptionner produit", Icons.unarchive_rounded, const Color(0xFFEA580C), () {
                   Navigator.push(context, MaterialPageRoute(builder: (c) => ArrivagePage(
                     controller: stockController,
-                    auteur: "${user.prenom} ${user.nom}",
+                    user: user,
                   )));
                 }),
                 _actionFlashBtn("Bon de sortie de stock", Icons.local_shipping_outlined, const Color(0xFFF97316), () {}),
@@ -74,15 +74,32 @@ class GerantPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 
-                ...stockController.alertesCritiques.map((produit) {
-                  return AlerteCard(
-                    nom: produit.nom,
-                    statut: "Quantité restante : ${produit.quantite}",
-                    label: produit.quantite <= 0 ? "RUPTURE" : "CRITIQUE",
-                    couleur: produit.quantite <= 0 ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
-                    icone: Icons.warning_amber_rounded,
-                  );
-                }),
+                if (stockController.alertesCritiques.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text("Aucun produit en alerte pour le moment.", style: ThemeQuinca.corpsTexte),
+                  )
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: stockController.alertesCritiques.length,
+                    itemBuilder: (context, index) {
+                      final p = stockController.alertesCritiques[index];
+                      final couleur = p.estEnRupture ? ThemeQuinca.rupture : ThemeQuinca.alerte;
+                      return ListTile(
+                        leading: Icon(p.estEnRupture ? Icons.block_rounded : Icons.warning_amber_rounded, color: couleur),
+                        title: Text(p.nom, style: ThemeQuinca.corpsTexte.copyWith(fontWeight: FontWeight.bold, color: ThemeQuinca.texteFonce)),
+                        subtitle: Text("Ref: ${p.reference}", style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12)),
+                        trailing: Text("${p.quantite} u", style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 14, color: couleur)),
+                      );
+                    },
+                  ),
               ],
             ),
           ),
@@ -124,7 +141,35 @@ class GerantPage extends StatelessWidget {
           ),
           Row(
             children: [
-              NotificationStock(controller: stockController),
+              IconButton(
+                icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AlertesStockPage(controller: stockController),
+                    ),
+                  );
+                },
+              ),
+              if (stockController.produitsEnRupture.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: ThemeQuinca.rupture,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    '${stockController.produitsEnRupture.length}',
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
             ],
           ),
         ],

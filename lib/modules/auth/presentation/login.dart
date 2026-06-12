@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../coeur/composants/pin_input.dart';
+import '../../../coeur/theme/theme_quinca.dart';
+import '../../../coeur/composants/btn_principal.dart';
 import '../../dashbord/presentation/role.dart'; // Import de l'aiguilleur
 import '../../produits/logique/stock_controller.dart';
-import '../../ventes/logique/vente_controller.dart'; // Import indispensable
+import '../../ventes/logique/vente_controller.dart'; // Import indispensable 
 import '../data/mock.dart';
 import '../data/user.dart';
-import 'register_page.dart'; // ◄ AJOUT : Import indispensable pour la navigation
+import 'registre.dart'; 
+import 'reset.dart';
+import '../logique/user_controller.dart';
+import '../logique/hook.dart'; 
 
 class Login extends StatefulWidget {
   // On passe le stockController au Login pour qu'il puisse le donner à la RolePage
@@ -23,6 +28,7 @@ class _LoginState extends State<Login> {
   final _phoneController = TextEditingController();
   final _pinController = TextEditingController();
   bool _enChargement = false;
+  final UserController _userController = UserController(); // Instance persistante
 
   @override
   void dispose() {
@@ -47,6 +53,9 @@ class _LoginState extends State<Login> {
 
         setState(() => _enChargement = false);
 
+        // Initialisation du périmètre boutique pour le stock
+        widget.stockController.initialiserBoutique(utilisateurAConnecter.boutiqueId);
+
         // 3. PLUS DE HOOKS ! On envoie tout le monde sur RolePage.
         // C'est elle qui choisira d'afficher DashboardPage ou GerantPage.
         Navigator.pushReplacement(
@@ -57,6 +66,7 @@ class _LoginState extends State<Login> {
               stockController: widget.stockController,
               venteController: VenteController(
                 stockController: widget.stockController,
+                boutiqueId: utilisateurAConnecter.boutiqueId,
               ), // On crée le contrôleur proprement ici
             ), // La ligne en trop a été supprimée, l'erreur va disparaître !
           ),
@@ -90,7 +100,7 @@ class _LoginState extends State<Login> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A3B8B),
+                  color: ThemeQuinca.bleuPrincipal,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
@@ -102,18 +112,11 @@ class _LoginState extends State<Login> {
               const SizedBox(height: 16),
               Text(
                 "QuincaPro",
-                style: GoogleFonts.urbanist(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0F172A),
-                ),
+                style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 32),
               ),
               Text(
                 "Gestion de quincaillerie",
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  color: const Color(0xFF64748B),
-                ),
+                style: ThemeQuinca.corpsTexte.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 40),
 
@@ -124,7 +127,7 @@ class _LoginState extends State<Login> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: ThemeQuinca.bordure),
                 ),
                 child: Form(
                   key: _formKey,
@@ -133,22 +136,14 @@ class _LoginState extends State<Login> {
                     children: [
                       Text(
                         "Connexion à votre espace",
-                        style: GoogleFonts.urbanist(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
+                        style: ThemeQuinca.titrePrincipal,
                       ),
                       const SizedBox(height: 24),
 
                       // Champ Téléphone
                       Text(
                         "Numéro de téléphone",
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF475569),
-                        ),
+                        style: ThemeQuinca.corpsTexte.copyWith(fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
@@ -163,7 +158,7 @@ class _LoginState extends State<Login> {
                             margin: const EdgeInsets.only(right: 8),
                             decoration: const BoxDecoration(
                               border: Border(
-                                right: BorderSide(color: Color(0xFFE2E8F0)),
+                                right: BorderSide(color: ThemeQuinca.bordure),
                               ),
                             ),
                             child: Row(
@@ -172,14 +167,14 @@ class _LoginState extends State<Login> {
                                 const Icon(
                                   Icons.phone_android_outlined,
                                   size: 20,
-                                  color: Color(0xFF64748B),
+                                  color: ThemeQuinca.texteSecondaire,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   "+229",
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF1A3B8B),
+                                    color: ThemeQuinca.bleuPrincipal,
                                   ),
                                 ),
                               ],
@@ -192,20 +187,16 @@ class _LoginState extends State<Login> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                            ),
+                            borderSide: const BorderSide(color: ThemeQuinca.bordure),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                            ),
+                            borderSide: const BorderSide(color: ThemeQuinca.bordure),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
-                              color: Color(0xFFFD7E14),
+                              color: ThemeQuinca.alerte,
                               width: 2,
                             ),
                           ),
@@ -216,11 +207,7 @@ class _LoginState extends State<Login> {
                       // Champ Code PIN
                       Text(
                         "Code PIN (6 chiffres)",
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF475569),
-                        ),
+                        style: ThemeQuinca.corpsTexte.copyWith(fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 8),
                       PinInput(
@@ -230,36 +217,10 @@ class _LoginState extends State<Login> {
                       const SizedBox(height: 32),
 
                       // Bouton Se connecter
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: _enChargement ? null : _soumettre,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1A3B8B),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: _enChargement
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(
-                                  "Se connecter",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                        ),
+                      BtnPrincipal(
+                        texte: "Se connecter",
+                        onPressed: _soumettre,
+                        isLoading: _enChargement,
                       ),
                       const SizedBox(height: 24),
 
@@ -269,17 +230,15 @@ class _LoginState extends State<Login> {
                         children: [
                           Text(
                             "Nouveau sur QuincaPro ? ",
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: const Color(0xFF64748B),
-                            ),
+                            style: ThemeQuinca.corpsTexte,
                           ),
                           GestureDetector(
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => RegisterPage(
+                                MaterialPageRoute( 
+                                  builder: (context) => RegistrePage(
+                                    authHook: HookAuth(), 
                                     stockController: widget.stockController,
                                   ),
                                 ),
@@ -290,7 +249,7 @@ class _LoginState extends State<Login> {
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFFFD7E14),
+                                color: ThemeQuinca.alerte,
                               ),
                             ),
                           ),

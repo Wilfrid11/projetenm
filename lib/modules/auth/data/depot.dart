@@ -50,6 +50,7 @@ class DepotAuth {
         nomBoutique: ancienUser.nomBoutique,
         telephoneBoutique: ancienUser.telephoneBoutique, // Ajout du paramètre 'telephoneBoutique'
         adresse: ancienUser.adresse, // Ajout du paramètre 'adresse'
+        boutiqueId: ancienUser.boutiqueId,
         isFirstLogin: false, // Sécurité levée !
       );
       
