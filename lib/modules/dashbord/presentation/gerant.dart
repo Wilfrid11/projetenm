@@ -56,7 +56,7 @@ class GerantPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 
-                _actionFlashBtn(context, "Nouvelle vente (panier)", Icons.add_shopping_cart_rounded, ThemeQuinca.alerte, () {
+                _actionFlashBtn(context, "Effectuer une vente", Icons.add_shopping_cart_rounded, ThemeQuinca.bleuPrincipal, () {
                   if (onAllerAuxVentes != null) onAllerAuxVentes!();
                 }),
                 _actionFlashBtn(context, "Ajouter / Réceptionner produit", Icons.unarchive_rounded, ThemeQuinca.alerte, () {
@@ -70,7 +70,7 @@ class GerantPage extends StatelessWidget {
                 
                 Text(
                   "Alertes critiques de stock",
-                  style: GoogleFonts.urbanist(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                  style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 18),
                 ),
                 const SizedBox(height: 12),
                 

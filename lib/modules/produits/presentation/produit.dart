@@ -38,7 +38,8 @@ class _ProduitPageState extends State<ProduitPage> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // Assurez-vous que length correspond au nombre d'onglets
+    // Le gérant n'a pas accès à l'onglet "Catalogue" (création de fiches)
+    _tabController = TabController(length: widget.user.isAdmin ? 3 : 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() => _isActionActive = true);
@@ -88,11 +89,16 @@ class _ProduitPageState extends State<ProduitPage> with SingleTickerProviderStat
               labelColor: ThemeQuinca.bleuPrincipal,
               unselectedLabelColor: ThemeQuinca.texteSecondaire,
               labelStyle: ThemeQuinca.corpsTexte.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
-              tabs: const [
-                Tab(text: "Catalogue", icon: Icon(Icons.playlist_add_rounded, size: 20)),
-                Tab(text: "Arrivage", icon: Icon(Icons.input_rounded, size: 20)),
-                Tab(text: "Historique", icon: Icon(Icons.history_rounded, size: 20)),
-              ],
+              tabs: widget.user.isAdmin 
+                ? const [
+                    Tab(text: "Catalogue", icon: Icon(Icons.playlist_add_rounded, size: 20)),
+                    Tab(text: "Arrivage", icon: Icon(Icons.input_rounded, size: 20)),
+                    Tab(text: "Historique", icon: Icon(Icons.history_rounded, size: 20)),
+                  ]
+                : const [
+                    Tab(text: "Arrivage", icon: Icon(Icons.input_rounded, size: 20)),
+                    Tab(text: "Historique", icon: Icon(Icons.history_rounded, size: 20)),
+                  ],
             ),
           ),
           // Drawer retiré comme demandé
@@ -100,7 +106,8 @@ class _ProduitPageState extends State<ProduitPage> with SingleTickerProviderStat
               ? TabBarView(
                   controller: _tabController,
                   children: [
-                    CataloguePage(controller: widget.stockController, user: widget.user),
+                    if (widget.user.isAdmin)
+                      CataloguePage(controller: widget.stockController, user: widget.user),
                     ArrivagePage(controller: widget.stockController, user: widget.user),
                     HistoriqueEntreesPage(controller: widget.stockController),
                   ],
