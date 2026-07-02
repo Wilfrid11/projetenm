@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../coeur/theme/theme_quinca.dart';
 import '../../../coeur/composants/btn_principal.dart';
 import '../logique/hook.dart';
+import '../logique/password_utils.dart';
+import '../logique/telephone_utils.dart';
 import '../../produits/logique/stock_controller.dart';
 
 class RegistrePage extends StatefulWidget {
@@ -34,7 +36,7 @@ class _RegistrePageState extends State<RegistrePage> {
   final _nomController = TextEditingController();
   final _prenomController = TextEditingController();
   final _telController = TextEditingController();
-  final _pinController = TextEditingController();
+  final _motDePasseController = TextEditingController();
 
   @override
   void dispose() {
@@ -46,7 +48,7 @@ class _RegistrePageState extends State<RegistrePage> {
     _adresseController.dispose();
     _villeController.dispose();
     _telBoutiqueController.dispose();
-    _pinController.dispose();
+    _motDePasseController.dispose();
     super.dispose();
   }
 
@@ -78,7 +80,7 @@ class _RegistrePageState extends State<RegistrePage> {
         adresse: _adresseController.text.trim(),
         ville: _villeController.text.trim(),
         telBoutique: _telBoutiqueController.text.trim(),
-        pin: _pinController.text.trim(),
+        motDePasse: _motDePasseController.text.trim(),
       );
 
       if (succes && mounted) {
@@ -148,7 +150,7 @@ class _RegistrePageState extends State<RegistrePage> {
           _buildField("Nom", _nomController, Icons.person_outline),
           _buildField("Prénom", _prenomController, Icons.badge_outlined),
           _buildField("Téléphone Personnel", _telController, Icons.phone_android, keyboard: TextInputType.phone),
-          _buildField("Code PIN (6 chiffres)", _pinController, Icons.lock_outline, keyboard: TextInputType.number, obscure: true),
+          _buildField("Mot de passe (6 chiffres)", _motDePasseController, Icons.lock_outline, keyboard: TextInputType.number, obscure: true),
           const SizedBox(height: 30),
           Row(
             children: [
@@ -209,7 +211,19 @@ class _RegistrePageState extends State<RegistrePage> {
         obscureText: obscure,
         keyboardType: keyboard,
         decoration: ThemeQuinca.inputDecoration(label: label, icone: icon),
-        validator: (v) => (v == null || v.isEmpty) ? "Champ obligatoire" : null,
+        validator: (v) {
+          if (v == null || v.isEmpty) {
+            return "Champ obligatoire";
+          }
+          if (controller == _telController && !telephoneBeninValide(v)) {
+            return "Numero invalide (ex: 0197000000)";
+          }
+          if (controller == _motDePasseController &&
+              !motDePasseSixChiffresValide(v)) {
+            return "Le mot de passe doit contenir 6 chiffres";
+          }
+          return null;
+        },
       ),
     );
   }

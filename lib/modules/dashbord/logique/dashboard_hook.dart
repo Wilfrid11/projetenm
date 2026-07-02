@@ -12,7 +12,7 @@ class HookDashboard extends ChangeNotifier {
   User _utilisateurConnecte = mockUsers["+22997000000"]!;
 
   // Données financières converties automatiquement depuis le Mock JSON
-  StatsDashboard _statsAdmin = StatsDashboard.fromJson(mockStatsAdmin);
+  final StatsDashboard _statsAdmin = StatsDashboard.fromJson(mockStatsAdmin);
 
   // Getters pour distribuer les informations aux écrans
   User get utilisateurConnecte => _utilisateurConnecte;

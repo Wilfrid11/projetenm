@@ -1,118 +1,124 @@
-// lib/modules/produits/presentation/historique_entrees.dart
+// lib/modules/produits/presentation/onglets/historique_entrees.dart
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../../coeur/composants/historique/carte_historique.dart';
+import '../../../../coeur/composants/historique/confirmation_masquer_dialog.dart';
+import '../../../../coeur/composants/historique/detail_historique_sheet.dart';
+import '../../../../coeur/composants/historique/filtre_periode.dart';
 import '../../../../coeur/theme/theme_quinca.dart';
+import '../../../historique/data/historique_models.dart';
 import '../../logique/stock_controller.dart';
 
-class HistoriqueEntreesPage extends StatelessWidget {
+class HistoriqueEntreesPage extends StatefulWidget {
   final StockController controller;
 
   const HistoriqueEntreesPage({super.key, required this.controller});
 
   @override
+  State<HistoriqueEntreesPage> createState() => _HistoriqueEntreesPageState();
+}
+
+class _HistoriqueEntreesPageState extends State<HistoriqueEntreesPage> {
+  PeriodeHistorique _periode = PeriodeHistorique.septJours;
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-        listenable: controller,
-        builder: (context, _) {
-          final entrees = controller.historiqueEntrees;
+      listenable: widget.controller,
+      builder: (context, _) {
+        final entrees = widget.controller.historiqueEntrees.where((entree) {
+          final date = entree.createdAt;
+          if (date == null) return _periode == PeriodeHistorique.tout;
+          return dateDansPeriode(date, _periode);
+        }).toList();
 
-          // Si le gérant n'a encore rien validé, on affiche ce message propre
-          if (entrees.isEmpty) {
-            return Center(
-              child: Text(
-                "Aucun arrivage enregistré pour le moment.",
-                style: GoogleFonts.inter(color: ThemeQuinca.texteSecondaire, fontSize: 13),
-              ),
-            );
-          }
+        return Column(
+          children: [
+            FiltrePeriode(
+              valeur: _periode,
+              onChanged: (periode) => setState(() => _periode = periode),
+            ),
+            Expanded(
+              child: _buildListe(entrees),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-          // Si le contrôleur contient des entrées, on les liste ici
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: entrees.length,
-            itemBuilder: (context, index) {
-              final entree = entrees[index];
+  Widget _buildListe(List<EntreeFournisseur> entrees) {
+    if (widget.controller.chargementArrivages) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-              return Card(
-                color: Colors.white,
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: ThemeQuinca.bordure),
-                ),
-                child: ExpansionTile(
-                  shape: const Border(),
-                  collapsedShape: const Border(),
-                  leading: const CircleAvatar(
-                    backgroundColor: ThemeQuinca.alerte,
-                    child: Icon(Icons.downloading_rounded, color: Colors.white),
-                  ),
-                  title: Text(
-                    entree.fournisseur,
-                    style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 14),
-                  ),
-                  subtitle: Text(
-                    "Le ${entree.dateArrivage} • Par : ${entree.auteur}",
-                    style: ThemeQuinca.corpsTexte.copyWith(fontSize: 11),
-                  ),
-                  // Le bouton poubelle appelle la fonction de nettoyage du contrôleur
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 22),
-                    onPressed: () => controller.masquerEntreeDeLEcran(index),
-                  ),
-                  children: [
-                    const Divider(height: 1, color: ThemeQuinca.bordure),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("Produit / Catégorie", style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
-                                Text("Quantité Reçue", style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                          // On boucle sur la liste des produits rattachés à cet arrivage précis
-                          ...entree.lignes.map((ligne) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(ligne.nomProduit, style: ThemeQuinca.corpsTexte.copyWith(fontSize: 13, fontWeight: FontWeight.w500, color: ThemeQuinca.texteFonce)),
-                                      const SizedBox(height: 4),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(color: ThemeQuinca.fondGris, borderRadius: BorderRadius.circular(4)),
-                                        child: Text(ligne.categorie, style: ThemeQuinca.corpsTexte.copyWith(fontSize: 10)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  "${ligne.quantiteRecue}",
-                                  style: ThemeQuinca.corpsTexte.copyWith(fontSize: 14, fontWeight: FontWeight.bold, color: ThemeQuinca.bleuPrincipal),
-                                ),
-                              ],
-                            ),
-                          )),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              );
-            },
-          );
-        });
+    if (entrees.isEmpty) {
+      return Center(
+        child: Text(
+          "Aucun arrivage sur cette periode.",
+          style: ThemeQuinca.corpsTexte,
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: entrees.length,
+      itemBuilder: (context, index) {
+        final entree = entrees[index];
+        return CarteHistorique(
+          titre: entree.fournisseur,
+          sousTitre: "Par : ${entree.auteur}",
+          dateLabel: entree.dateArrivage,
+          resume:
+              "${entree.lignes.length} produits • ${entree.totalQuantites} unites recues",
+          icone: Icons.downloading_rounded,
+          onTap: () => _ouvrirDetails(entree),
+          onMasquer: () => _masquer(entree),
+        );
+      },
+    );
+  }
+
+  void _ouvrirDetails(EntreeFournisseur entree) {
+    afficherDetailHistoriqueSheet(
+      context,
+      titre: entree.fournisseur,
+      sousTitre: "Par : ${entree.auteur}",
+      dateLabel: entree.dateArrivage,
+      lignes: entree.lignes
+          .map(
+            (ligne) => LigneDetailHistorique(
+              titre: ligne.nomProduit,
+              sousTitre: ligne.categorie,
+              valeur: "+${ligne.quantiteRecue} ${ligne.uniteVente}",
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Future<void> _masquer(EntreeFournisseur entree) async {
+    final confirmer = await confirmerMasquageHistorique(context);
+    if (!confirmer || !mounted) return;
+
+    final index = widget.controller.historiqueEntrees.indexWhere(
+      (item) => item.id == entree.id,
+    );
+    if (index == -1) return;
+
+    final succes = await widget.controller.masquerEntreeDeLEcran(index);
+    if (!mounted || succes) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          widget.controller.erreurArrivages ??
+              "Impossible de masquer cet arrivage.",
+        ),
+        backgroundColor: ThemeQuinca.rupture,
+      ),
+    );
   }
 }

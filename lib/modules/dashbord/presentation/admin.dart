@@ -1,7 +1,6 @@
 // lib/modules/dashboard/presentation/admin.dart
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../coeur/theme/theme_quinca.dart';
 import '../../produits/logique/stock_controller.dart';
 import '../../ventes/logique/vente_controller.dart';
@@ -9,6 +8,7 @@ import '../../produits/presentation/alertes_stock.dart';
 import '../../auth/logique/user_controller.dart';
 import '../../auth/presentation/gestion_utilisateurs.dart';
 import '../../auth/data/user.dart';
+import '../../fournisseurs/presentation/fournisseurs_page.dart';
 
 class DashboardAdmin extends StatelessWidget {
   final StockController stockController;
@@ -148,7 +148,17 @@ class DashboardAdmin extends StatelessWidget {
                           admin: user)
                       )),
                     ),
-                    _buildActionCard(context, "Fournisseurs", Icons.local_shipping_outlined),
+                    _buildActionCard(
+                      context,
+                      "Fournisseurs",
+                      Icons.local_shipping_outlined,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FournisseursPage(user: user),
+                        ),
+                      ),
+                    ),
                     _buildActionCard(context, "Inventaire", Icons.inventory_outlined),
                   ],
                 ),

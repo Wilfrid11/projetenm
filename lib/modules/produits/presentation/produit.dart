@@ -1,11 +1,11 @@
 // lib/modules/produit/presentation/produit.dart
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../../../coeur/theme/theme_quinca.dart';
 import '../../../coeur/composants/filtre.dart';
 import '../logique/stock_controller.dart';
-import '../composants/menu_lateral.dart';
+
 import '../composants/carte_produit.dart';
 import '../../auth/data/user.dart'; // Import nécessaire pour passer l'utilisateur au menu latéral
 import '../../ventes/logique/vente_controller.dart';

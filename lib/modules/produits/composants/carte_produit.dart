@@ -26,10 +26,10 @@ class CarteProduit extends StatelessWidget {
       texteStatut = "Rupture";
     } else if (produit.quantite <= produit.seuilAlerte) {
       couleurStatut = ThemeQuinca.alerte;
-      texteStatut = "Alerte (${produit.quantite})";
+      texteStatut = "Alerte (${produit.quantite} ${produit.uniteVente})";
     } else {
       couleurStatut = ThemeQuinca.succes;
-      texteStatut = "${produit.quantite} unités";
+      texteStatut = "${produit.quantite} ${produit.uniteVente}";
     }
 
     return Container(

@@ -1,383 +1,369 @@
-// lib/modules/produit/presentation/onglets/arrivage.dart
+// lib/modules/produits/presentation/onglets/arrivage.dart
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../../../coeur/theme/theme_quinca.dart'; // Import de ton fichier de thème
-import '../../logique/stock_controller.dart';
+
+import '../../../../coeur/composants/btn_principal.dart';
+import '../../../../coeur/theme/theme_quinca.dart';
+import '../../../auth/data/user.dart';
+import '../../../fournisseurs/data/fournisseur.dart';
+import '../../../fournisseurs/logique/fournisseur_controller.dart';
+import '../../../historique/data/historique_models.dart';
 import '../../data/produit.dart';
-import '../../../historique/data/historique_models.dart'; // Chemin d'import corrigé
-import '../../../auth/data/user.dart'; // Chemin d'import corrigé
+import '../../logique/stock_controller.dart';
 
 class ArrivagePage extends StatefulWidget {
   final StockController controller;
-  final User user; // On passe l'objet User complet
+  final User user;
 
-  const ArrivagePage({super.key, required this.controller, required this.user});
+  const ArrivagePage({
+    super.key,
+    required this.controller,
+    required this.user,
+  });
 
   @override
   State<ArrivagePage> createState() => _ArrivagePageState();
 }
 
 class _ArrivagePageState extends State<ArrivagePage> {
-  // Petite fonction locale pour déterminer la couleur de l'icône selon le niveau de stock
-  Color _obtenirCouleurStock(Produit prod) {
-    if (prod.quantite == 0) {
-      return ThemeQuinca.rupture; // Rouge si rupture
-    } else if (prod.quantite <= prod.seuilAlerte) {
-      return ThemeQuinca.alerte; // Orange si alerte critique
+  final FournisseurController _fournisseurController = FournisseurController();
+  final List<_LigneArrivageForm> _lignes = [];
+  Fournisseur? _fournisseurSelectionne;
+  bool _validationEnCours = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fournisseurController.charger(widget.user.boutiqueId);
+    _ajouterLigne();
+  }
+
+  @override
+  void dispose() {
+    _fournisseurController.dispose();
+    for (final ligne in _lignes) {
+      ligne.dispose();
     }
-    return ThemeQuinca.succes; // Vert si stock suffisant
+    super.dispose();
+  }
+
+  void _ajouterLigne() {
+    setState(() => _lignes.add(_LigneArrivageForm()));
+  }
+
+  void _supprimerLigne(int index) {
+    if (_lignes.length <= 1) return;
+    _lignes[index].dispose();
+    setState(() => _lignes.removeAt(index));
+  }
+
+  Future<void> _validerArrivage() async {
+    if (_validationEnCours) return;
+
+    final fournisseur = _fournisseurSelectionne;
+    if (fournisseur == null) {
+      _afficherErreur("Selectionnez le fournisseur de cet arrivage.");
+      return;
+    }
+
+    final lignesHistorique = <LigneEntree>[];
+    final produitsDisponibles = widget.controller.produits;
+
+    for (var i = 0; i < _lignes.length; i++) {
+      final ligne = _lignes[i];
+      final produitId = ligne.produitId;
+      final quantite = int.tryParse(ligne.quantiteCtrl.text.trim());
+
+      if (produitId == null || produitId.isEmpty) {
+        _afficherErreur("Ligne ${i + 1} : choisissez un produit.");
+        return;
+      }
+      if (quantite == null || quantite <= 0) {
+        _afficherErreur("Ligne ${i + 1} : quantite recue invalide.");
+        return;
+      }
+
+      final produit = produitsDisponibles.firstWhere(
+        (item) => item.id == produitId,
+      );
+
+      lignesHistorique.add(
+        LigneEntree(
+          produitId: produit.id,
+          nomProduit: produit.nom,
+          categorie: produit.categorie,
+          uniteVente: produit.uniteVente,
+          quantiteRecue: quantite,
+        ),
+      );
+    }
+
+    final maintenant = DateTime.now();
+    final entree = EntreeFournisseur(
+      id: '',
+      boutiqueId: widget.user.boutiqueId,
+      fournisseurId: fournisseur.id,
+      fournisseur: fournisseur.nom,
+      dateArrivage: _dateLisible(maintenant),
+      auteurId: widget.user.id,
+      auteur: "${widget.user.prenom} ${widget.user.nom}",
+      lignes: lignesHistorique,
+      createdAt: maintenant,
+      visible: true,
+    );
+
+    setState(() => _validationEnCours = true);
+    final succes = await widget.controller.validerArrivage(entree);
+    if (!mounted) return;
+    setState(() => _validationEnCours = false);
+
+    if (!succes) {
+      _afficherErreur(
+        widget.controller.erreurArrivages ??
+            "Impossible de valider l'arrivage.",
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Arrivage valide et stock mis a jour.")),
+    );
+
+    for (final ligne in _lignes) {
+      ligne.dispose();
+    }
+    setState(() {
+      _lignes
+        ..clear()
+        ..add(_LigneArrivageForm());
+      _fournisseurSelectionne = null;
+    });
+  }
+
+  String _dateLisible(DateTime date) {
+    final jour = date.day.toString().padLeft(2, '0');
+    final mois = date.month.toString().padLeft(2, '0');
+    final heure = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return "$jour/$mois/${date.year} a $heure:$minute";
+  }
+
+  void _afficherErreur(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: ThemeQuinca.rupture),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(listenable: widget.controller, builder: (context, _) {
-      final listeProduits = widget.controller.produits;
+    return ListenableBuilder(
+      listenable: Listenable.merge([widget.controller, _fournisseurController]),
+      builder: (context, _) {
+        final produits = widget.controller.produits;
+        final fournisseurs = _fournisseurController.fournisseurs;
 
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ================= PARCOURS B : ARTICLE INÉDIT =================
-            Card(
-              elevation: 0,
-              color: ThemeQuinca.alerte.withOpacity(0.08), // Utilisation de alerte (Orange)
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: ThemeQuinca.alerte.withOpacity(0.2),
-                ),
-              ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: ThemeQuinca.alerte.withOpacity(0.15),
-                  child: const Icon(
-                    Icons.add_box_outlined,
-                    color: ThemeQuinca.alerte,
-                  ),
-                ),
-                title: Text(
-                  "Nouvel article",
-                  style: GoogleFonts.urbanist(
-                    fontWeight: FontWeight.bold,
-                    color: ThemeQuinca.alerte,
-                  ),
-                ),
-                subtitle: const Text(
-                  "L'article n'existe pas encore. Créer la fiche et ajouter le stock.",
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: ThemeQuinca.alerte,
-                ),
-                onTap: () => _ouvrirFormulaireInedit(context),
+        if (widget.controller.chargementProduits ||
+            _fournisseurController.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (produits.isEmpty) {
+          return const Center(
+            child: Text("Ajoutez d'abord des produits au catalogue."),
+          );
+        }
+
+        if (fournisseurs.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(24),
+            child: Center(
+              child: Text(
+                "Aucun fournisseur disponible. L'admin doit ajouter un fournisseur avant de valider un arrivage.",
+                textAlign: TextAlign.center,
+                style: ThemeQuinca.corpsTexte,
               ),
             ),
-            const SizedBox(height: 24),
+          );
+        }
 
-            // ================= PARCOURS A : SELECTION EXISTANTE =================
-            Text(
-              " Sélectionner l'article reçu",
-              style: GoogleFonts.urbanist(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: ThemeQuinca.texteFonce,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Expanded(
-              child: listeProduits.isEmpty
-                  ? const Center(child: Text("Aucun produit disponible."))
-                  : ListView.builder(
-                      itemCount: listeProduits.length,
-                      itemBuilder: (context, index) {
-                        final prod = listeProduits[index];
-                        // Détermination de la couleur selon l'état du produit
-                        final couleurStatut = _obtenirCouleurStock(prod);
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: ThemeQuinca.bordure),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              // Couleur dynamique (Vert, Orange ou Rouge) selon le stock réel !
-                              backgroundColor: couleurStatut.withOpacity(0.1),
-                              child: Icon(
-                                Icons.inventory_2_outlined,
-                                color: couleurStatut,
-                                size: 18,
-                              ),
-                            ),
-                            title: Text(
-                              prod.nom,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: ThemeQuinca.texteFonce,
-                              ),
-                            ),
-                            subtitle: Text(
-                              "Stock actuel : ${prod.quantite} u",
-                              style: const TextStyle(
-                                color: ThemeQuinca.texteSecondaire,
-                              ),
-                            ),
-                            trailing: const Icon(
-                              Icons.add_circle_outline_rounded,
-                              color: ThemeQuinca.bleuPrincipal,
-                            ),
-                            onTap: () => _ouvrirSaisieQuantiteExistante(
-                              context,
-                              prod,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-  // BOÎTE DE DIALOGUE : PARCOURS A (Ajout sur produit existant)
-  void _ouvrirSaisieQuantiteExistante(BuildContext contexte, Produit produit) {
-    final TextEditingController qteController = TextEditingController();
-
-    showDialog(
-      context: contexte,
-      builder: (contexte) => AlertDialog(
-        title: Text(
-          "Arrivage : ${produit.nom}",
-          style: GoogleFonts.urbanist(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: ThemeQuinca.texteFonce,
-          ),
-        ),
-        content: TextField(
-          controller: qteController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: "Quantité reçue (Unités) *",
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(contexte),
-            child: const Text(
-              "Annuler",
-              style: TextStyle(color: ThemeQuinca.texteSecondaire),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeQuinca.bleuPrincipal,
-            ),
-            onPressed: () {
-              int? qte = int.tryParse(qteController.text);
-              if (qte != null && qte > 0) {
-                // ON RECOPIE NOTRE FONCTION AVEC LE 3e ARGUMENT (L'HISTORIQUE)
-                widget.controller.validerArrivage(
-                  EntreeFournisseur(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    boutiqueId: widget.user.boutiqueId, // Added boutiqueId
-                    fournisseur:
-                        "Fournisseur Général", // Modifiable plus tard si tu ajoutes un champ texte
-                    dateArrivage: "${DateTime.now().day.toString().padLeft(2, '0')}/${DateTime.now().month.toString().padLeft(2, '0')}/${DateTime.now().year} à ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}",
-                    auteur: "${widget.user.prenom} ${widget.user.nom}", // Use user's name
-                    lignes: [
-                      LigneEntree(
-                        nomProduit: produit.nom,
-                        categorie: produit.categorie,
-                        quantiteRecue: qte,
-                      ),
-                    ],
-                  ),
-                );
-
-                Navigator.pop(contexte);
-
-                ScaffoldMessenger.of(contexte).showSnackBar(
-                  SnackBar(
-                    content: Text("Stock mis à jour : +$qte ${produit.nom}"),
-                  ),
-                );
-              }
-            },
-            child: const Text(
-              "Valider",
-              style: TextStyle(color: ThemeQuinca.texteInverse),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // FORMULAIRE MODAL : PARCOURS B (Création d'une fiche + injection stock immédiat)
-  void _ouvrirFormulaireInedit(BuildContext contexte) {
-    final nomCtrl = TextEditingController();
-    final refCtrl = TextEditingController();
-    final prixACtrl = TextEditingController();
-    final prixVCtrl = TextEditingController();
-    final qteCtrl = TextEditingController();
-    final seuilCtrl = TextEditingController();
-
-    showModalBottomSheet(
-      context: contexte,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (contexte) {
         return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(contexte).viewInsets.bottom,
-            top: 20,
-            left: 16,
-            right: 16,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Fiche Nouvel Arrivage (Inédit)",
-                  style: GoogleFonts.urbanist(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: ThemeQuinca.alerte,
-                  ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<Fournisseur>(
+                initialValue: _fournisseurSelectionne,
+                decoration: ThemeQuinca.inputDecoration(
+                  label: "Fournisseur",
+                  icone: Icons.local_shipping_outlined,
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: nomCtrl,
-                  decoration: const InputDecoration(
-                    labelText: "Nom de l'article *",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: refCtrl,
-                  decoration: const InputDecoration(
-                    labelText: "Référence ",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: prixACtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Prix Achat *",
-                          border: OutlineInputBorder(),
-                        ),
+                items: fournisseurs
+                    .map(
+                      (fournisseur) => DropdownMenuItem(
+                        value: fournisseur,
+                        child: Text(fournisseur.nom),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: prixVCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Prix Vente *",
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ],
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() => _fournisseurSelectionne = value);
+                },
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Produits recus",
+                style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _lignes.length,
+                  itemBuilder: (context, index) {
+                    final ligne = _lignes[index];
+                    return _CarteLigneArrivage(
+                      ligne: ligne,
+                      produits: produits,
+                      index: index,
+                      onSupprimer: () => _supprimerLigne(index),
+                      onChanged: () => setState(() {}),
+                    );
+                  },
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: qteCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Quantité livrée *",
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: seuilCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Seuil d'alerte *",
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ThemeQuinca.bleuPrincipal,
-                    ), // Bouton principal en Bleu
-                    onPressed: () {
-                      if (nomCtrl.text.isNotEmpty &&
-                          refCtrl.text.isNotEmpty &&
-                          qteCtrl.text.isNotEmpty) {
-                        int initialeQte = int.tryParse(qteCtrl.text) ?? 0;
-
-                        widget.controller.nouveauProduit(
-                          Produit(
-                            id: refCtrl.text.trim(),
-                            boutiqueId: widget.user.boutiqueId, // Added boutiqueId
-                            nom: nomCtrl.text.trim(),
-                            reference: refCtrl.text.trim(),
-                            categorie: "Inédit", // TODO: Add category selection
-                            quantite: initialeQte,
-                            prixAchat: double.tryParse(prixACtrl.text) ?? 0,
-                            prixVente: double.tryParse(prixVCtrl.text) ?? 0,
-                            seuilAlerte: int.tryParse(seuilCtrl.text) ?? 5,
-                          ),
-                        );
-
-                        Navigator.pop(contexte);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Nouvel article enregistré et stocké !",
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text(
-                      "Valider le bon d'entrée",
-                      style: TextStyle(color: ThemeQuinca.texteInverse),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _validationEnCours ? null : _ajouterLigne,
+                      icon: const Icon(Icons.add),
+                      label: const Text("Ajouter une ligne"),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: BtnPrincipal(
+                      texte: _validationEnCours
+                          ? "Validation..."
+                          : "Valider l'arrivage",
+                      onPressed: _validerArrivage,
+                      isLoading: _validationEnCours,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+}
+
+class _LigneArrivageForm {
+  String? produitId;
+  final TextEditingController quantiteCtrl = TextEditingController();
+
+  void dispose() {
+    quantiteCtrl.dispose();
+  }
+}
+
+class _CarteLigneArrivage extends StatelessWidget {
+  final _LigneArrivageForm ligne;
+  final List<Produit> produits;
+  final int index;
+  final VoidCallback onSupprimer;
+  final VoidCallback onChanged;
+
+  const _CarteLigneArrivage({
+    required this.ligne,
+    required this.produits,
+    required this.index,
+    required this.onSupprimer,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Produit? produitSelectionne;
+    for (final produit in produits) {
+      if (produit.id == ligne.produitId) {
+        produitSelectionne = produit;
+        break;
+      }
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: ThemeQuinca.bordure),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: ligne.produitId,
+                    decoration: const InputDecoration(
+                      labelText: "Produit",
+                      isDense: true,
+                    ),
+                    items: produits
+                        .map(
+                          (produit) => DropdownMenuItem(
+                            value: produit.id,
+                            child: Text(produit.nom),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      ligne.produitId = value;
+                      onChanged();
+                    },
+                  ),
+                ),
+                IconButton(
+                  onPressed: onSupprimer,
+                  icon: const Icon(
+                    Icons.remove_circle_outline,
+                    color: ThemeQuinca.rupture,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: ligne.quantiteCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: produitSelectionne == null
+                          ? "Quantite recue"
+                          : "Quantite (${produitSelectionne.uniteVente})",
+                      isDense: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    produitSelectionne == null
+                        ? "Stock actuel : -"
+                        : "Stock actuel : ${produitSelectionne.quantite} ${produitSelectionne.uniteVente}",
+                    style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

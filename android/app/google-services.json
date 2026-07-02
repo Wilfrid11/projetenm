@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "677835609085",
+    "project_id": "quinca-944e7",
+    "storage_bucket": "quinca-944e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677835609085:android:64169f6ffc44ceb32aff94",
+        "android_client_info": {
+          "package_name": "com.example.quinca_pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADUR-9s2btNiwXqcN2RQStVdvBOnul7bE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

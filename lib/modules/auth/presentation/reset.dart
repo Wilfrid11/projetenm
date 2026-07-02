@@ -28,8 +28,10 @@ class _ResetState extends State<Reset> {
   void _enregistrerNouveauPin() {
     setState(() => _erreurTexte = null);
 
-    if (_nouveauPinController.text.length != 6 || _confirmerPinController.text.length != 6) {
-      setState(() => _erreurTexte = "Veuillez remplir intégralement les deux champs.");
+    if (_nouveauPinController.text.length != 6 ||
+        _confirmerPinController.text.length != 6) {
+      setState(() =>
+          _erreurTexte = "Veuillez remplir intégralement les deux champs.");
       return;
     }
 
@@ -40,9 +42,9 @@ class _ResetState extends State<Reset> {
 
     if (_formKey.currentState!.validate()) {
       setState(() => _enChargement = true);
-      
-      // Ici sera branchée la logique de mise à jour (Mock ou API Laravel)
-      print("Nouveau PIN configuré avec succès !");
+
+      // Ici sera branchee la logique de mise a jour (Mock, Firebase ou API).
+      setState(() => _enChargement = false);
     }
   }
 
@@ -69,7 +71,8 @@ class _ResetState extends State<Reset> {
                   // Icone d'alerte sécurité
                   Row(
                     children: [
-                      const Icon(Icons.shield_outlined, color: Color(0xFFFD7E14), size: 28),
+                      const Icon(Icons.shield_outlined,
+                          color: Color(0xFFFD7E14), size: 28),
                       const SizedBox(width: 8),
                       Text(
                         "Sécurité requise",
@@ -82,7 +85,7 @@ class _ResetState extends State<Reset> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // Message d'alerte explicatif du cahier des charges
                   Text(
                     "Pour des raisons de sécurité, veuillez personnaliser votre code PIN à 6 chiffres avant de continuer.",
@@ -106,7 +109,8 @@ class _ResetState extends State<Reset> {
                   const SizedBox(height: 8),
                   PinInput(
                     controller: _nouveauPinController,
-                    onComplet: (_) {}, // On attend la validation finale par bouton
+                    onComplet:
+                        (_) {}, // On attend la validation finale par bouton
                   ),
                   const SizedBox(height: 24),
 
@@ -122,9 +126,10 @@ class _ResetState extends State<Reset> {
                   const SizedBox(height: 8),
                   PinInput(
                     controller: _confirmerPinController,
-                    onComplet: (_) => _enregistrerNouveauPin(), // Soumission au dernier chiffre entré
+                    onComplet: (_) =>
+                        _enregistrerNouveauPin(), // Soumission au dernier chiffre entré
                   ),
-                  
+
                   // Zone d'affichage d'erreur dynamique
                   if (_erreurTexte != null) ...[
                     const SizedBox(height: 16),
@@ -157,7 +162,8 @@ class _ResetState extends State<Reset> {
                           ? const SizedBox(
                               height: 24,
                               width: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2),
                             )
                           : Text(
                               "Enregistrer et Continuer",
