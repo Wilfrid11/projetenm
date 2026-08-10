@@ -1,0 +1,57 @@
+export const boutiques = [
+  {
+    id: 'BTQ-001',
+    nom: 'Quinca Wilfrid',
+    admin: 'Wilfrid A.',
+    ville: 'Cotonou',
+    telephone: '0197000000',
+    statut: 'actif',
+    plan: 'Mensuel',
+    abonnement: 'actif',
+    expireLe: '28/08/2026',
+    revenu: 15000,
+  },
+  {
+    id: 'BTQ-002',
+    nom: 'Maison Fer Plus',
+    admin: 'Nadia K.',
+    ville: 'Porto-Novo',
+    telephone: '0166000000',
+    statut: 'suspendu',
+    plan: 'Mensuel',
+    abonnement: 'impaye',
+    expireLe: '02/08/2026',
+    revenu: 0,
+  },
+  {
+    id: 'BTQ-003',
+    nom: 'Bati Service',
+    admin: 'Serge M.',
+    ville: 'Parakou',
+    telephone: '0155000000',
+    statut: 'actif',
+    plan: 'Annuel',
+    abonnement: 'actif',
+    expireLe: '12/01/2027',
+    revenu: 120000,
+  },
+]
+
+export const paiements = [
+  {
+    id: 'PAY-1001',
+    boutique: 'Quinca Wilfrid',
+    montant: 15000,
+    mode: 'MTN',
+    date: '10/08/2026',
+    periode: 'Aout 2026',
+  },
+  {
+    id: 'PAY-1002',
+    boutique: 'Bati Service',
+    montant: 120000,
+    mode: 'Moov',
+    date: '05/08/2026',
+    periode: '2026',
+  },
+]

@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-quinca-blue: #1a3b8b;
+  --color-quinca-orange: #f97316;
+  --color-quinca-ink: #0f172a;
+  --color-quinca-muted: #64748b;
+  --color-quinca-border: #e2e8f0;
+  --color-quinca-bg: #f8fafc;
+}
+
+body {
+  margin: 0;
+  background: var(--color-quinca-bg);
+  color: var(--color-quinca-ink);
+}
+
+button,
+input {
+  font: inherit;
+}

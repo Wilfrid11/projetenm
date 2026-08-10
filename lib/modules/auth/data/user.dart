@@ -53,6 +53,36 @@ class User {
     };
   }
 
+  User copyWith({
+    String? id,
+    String? nom,
+    String? prenom,
+    String? telephone,
+    String? role,
+    String? boutiqueId,
+    String? nomBoutique,
+    String? adresse,
+    String? ville,
+    String? telephoneBoutique,
+    bool? actif,
+    bool? mustChangePassword,
+  }) {
+    return User(
+      id: id ?? this.id,
+      nom: nom ?? this.nom,
+      prenom: prenom ?? this.prenom,
+      telephone: telephone ?? this.telephone,
+      role: role ?? this.role,
+      boutiqueId: boutiqueId ?? this.boutiqueId,
+      nomBoutique: nomBoutique ?? this.nomBoutique,
+      adresse: adresse ?? this.adresse,
+      ville: ville ?? this.ville,
+      telephoneBoutique: telephoneBoutique ?? this.telephoneBoutique,
+      actif: actif ?? this.actif,
+      mustChangePassword: mustChangePassword ?? this.mustChangePassword,
+    );
+  }
+
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
       id: map['id'] as String? ?? '',

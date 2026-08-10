@@ -1,15 +1,25 @@
-// lib/modules/historique/presentation/historique_ventes.dart
+// lib/modules/ventes/presentation/historique_ventes.dart
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../../coeur/theme/theme_quinca.dart';
-import '../logique/vente_controller.dart';
-import '../../historique/data/historique_models.dart';
 
-class HistoriqueVentesPage extends StatelessWidget {
+import '../../../coeur/composants/historique/confirmation_masquer_dialog.dart';
+import '../../../coeur/composants/historique/detail_historique_sheet.dart';
+import '../../../coeur/composants/historique/filtre_periode.dart';
+import '../../../coeur/theme/theme_quinca.dart';
+import '../../historique/data/historique_models.dart';
+import '../logique/vente_controller.dart';
+
+class HistoriqueVentesPage extends StatefulWidget {
   final VenteController controller;
 
   const HistoriqueVentesPage({super.key, required this.controller});
+
+  @override
+  State<HistoriqueVentesPage> createState() => _HistoriqueVentesPageState();
+}
+
+class _HistoriqueVentesPageState extends State<HistoriqueVentesPage> {
+  PeriodeHistorique _periode = PeriodeHistorique.septJours;
 
   @override
   Widget build(BuildContext context) {
@@ -17,283 +27,362 @@ class HistoriqueVentesPage extends StatelessWidget {
       backgroundColor: ThemeQuinca.fondGris,
       appBar: AppBar(
         backgroundColor: ThemeQuinca.bleuPrincipal,
-        iconTheme: const IconThemeData(color: ThemeQuinca.texteInverse),
-        title: Text(
-          "Registre des Ventes",
-          style: GoogleFonts.urbanist(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: ThemeQuinca.texteInverse,
-          ),
-        ),
+        foregroundColor: Colors.white,
+        title: const Text("Registre des ventes"),
       ),
       body: ListenableBuilder(
-        listenable: controller,
+        listenable: widget.controller,
         builder: (context, _) {
-          final ventes = controller.historiqueVentes;
+          final ventes = widget.controller.historiqueVentes.where((vente) {
+            final date = vente.createdAt;
+            if (date == null) return _periode == PeriodeHistorique.tout;
+            return dateDansPeriode(date, _periode);
+          }).toList();
 
-          // Si aucune vente n'a été encaissée à la caisse pour le moment
-          if (ventes.isEmpty) {
-            return Center(
-              child: Text(
-                "Aucune vente enregistrée pour le moment.",
-                style: GoogleFonts.inter(
-                  color: ThemeQuinca.texteSecondaire,
-                  fontSize: 13,
-                ),
+          return Column(
+            children: [
+              FiltrePeriode(
+                valeur: _periode,
+                onChanged: (periode) => setState(() => _periode = periode),
               ),
-            );
-          }
-
-          // Affichage du registre des ventes
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: ventes.length,
-            itemBuilder: (context, index) {
-              final vente = ventes[index];
-              final bool estMomo = vente.moyenPaiement.toLowerCase().contains(
-                "momo",
-              );
-
-              return Card(
-                color: Colors.white,
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: ThemeQuinca.bordure),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(14.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // En-tête de la carte : Reçu, Date, et Poubelle de masquage
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                vente.numRecu,
-                                style: GoogleFonts.urbanist(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Text(
-                                vente.dateVente,
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  color: ThemeQuinca.texteSecondaire,
-                                ),
-                              ),
-                            ],
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.redAccent,
-                              size: 22,
-                            ),
-                            onPressed: () => controller.masquerVenteDeLEcran(index),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 12, color: ThemeQuinca.bordure),
-
-                      // Corps de la carte : Moyen de paiement, totaux, et bouton d'inspection
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Badge Moyen de paiement dynamique
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: ThemeQuinca.fondGris,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      estMomo
-                                          ? Icons.phone_android
-                                          : Icons.payments_outlined,
-                                      size: 12,
-                                      color: ThemeQuinca.bleuPrincipal,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      vente.moyenPaiement,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                "Articles : ${vente.totalArticles}",
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  color: ThemeQuinca.texteSecondaire,
-                                ),
-                              ),
-                              Text(
-                                "${vente.montantTotal.toInt()} FCFA",
-                                style: GoogleFonts.urbanist(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: ThemeQuinca.bleuPrincipal,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          // Bouton d'inspection qui ouvre le bottom sheet du panier
-                          TextButton.icon(
-                            style: TextButton.styleFrom(
-                              foregroundColor: ThemeQuinca.bleuPrincipal,
-                            ),
-                            onPressed: () =>
-                                _ouvrirDetailsPanier(context, vente),
-                            icon: const Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 16,
-                            ),
-                            label: Text(
-                              "Voir panier",
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+              _ResumeHistoriqueVentes(ventes: ventes),
+              Expanded(child: _buildListe(ventes)),
+            ],
           );
         },
       ),
     );
   }
 
-  // Feuille surgissante pour inspecter les articles du panier en détail
-  void _ouvrirDetailsPanier(BuildContext context, VenteRealisee vente) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.45,
+  Widget _buildListe(List<VenteRealisee> ventes) {
+    if (ventes.isEmpty) {
+      return Center(
+        child: Text(
+          "Aucune vente sur cette periode.",
+          style: ThemeQuinca.corpsTexte,
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      itemCount: ventes.length,
+      itemBuilder: (context, index) {
+        final vente = ventes[index];
+        return _CarteVenteHistorique(
+          vente: vente,
+          onTap: () => _ouvrirDetails(vente),
+          onMasquer: () => _masquer(vente),
+        );
+      },
+    );
+  }
+
+  void _ouvrirDetails(VenteRealisee vente) {
+    final lignes = vente.panier
+        .map(
+          (ligne) => LigneDetailHistorique(
+            titre: ligne.nomProduit,
+            sousTitre:
+                "${ligne.prixUnitaire.toInt()} FCFA x ${ligne.quantiteVendue} ${ligne.uniteVente}",
+            valeur: "${ligne.montantLigne.toInt()} FCFA",
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
+        )
+        .toList();
+
+    if (vente.montantRecu != null) {
+      lignes.add(
+        LigneDetailHistorique(
+          titre: "Montant recu",
+          sousTitre: vente.moyenPaiement,
+          valeur: "${vente.montantRecu!.toInt()} FCFA",
+        ),
+      );
+      lignes.add(
+        LigneDetailHistorique(
+          titre: "Monnaie rendue",
+          sousTitre: "Especes",
+          valeur: "${(vente.monnaieRendue ?? 0).toInt()} FCFA",
+        ),
+      );
+    }
+
+    afficherDetailHistoriqueSheet(
+      context,
+      titre: vente.numRecu,
+      sousTitre: vente.vendeurNom.isEmpty
+          ? "Paiement : ${vente.moyenPaiement}"
+          : "Vendeur : ${vente.vendeurNom} - ${vente.moyenPaiement}",
+      dateLabel: vente.dateVente,
+      lignes: lignes,
+    );
+  }
+
+  Future<void> _masquer(VenteRealisee vente) async {
+    final confirmer = await confirmerMasquageHistorique(context);
+    if (!confirmer || !mounted) return;
+
+    final index = widget.controller.historiqueVentes.indexWhere(
+      (item) => item.id == vente.id,
+    );
+    if (index == -1) return;
+
+    final succes = await widget.controller.masquerVenteDeLEcran(index);
+    if (!mounted || succes) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          widget.controller.erreurVente ?? "Impossible de masquer la vente.",
+        ),
+        backgroundColor: ThemeQuinca.rupture,
+      ),
+    );
+  }
+}
+
+class _ResumeHistoriqueVentes extends StatelessWidget {
+  final List<VenteRealisee> ventes;
+
+  const _ResumeHistoriqueVentes({required this.ventes});
+
+  @override
+  Widget build(BuildContext context) {
+    final totalVentes = ventes.length;
+    final totalArticles =
+        ventes.fold<int>(0, (somme, vente) => somme + vente.totalArticles);
+    final montantTotal =
+        ventes.fold<double>(0, (somme, vente) => somme + vente.montantTotal);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: ThemeQuinca.bordure),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _ItemResumeVente(
+              titre: "Ventes",
+              valeur: "$totalVentes",
+              couleur: ThemeQuinca.bleuPrincipal,
+            ),
+          ),
+          Expanded(
+            child: _ItemResumeVente(
+              titre: "Articles",
+              valeur: "$totalArticles",
+              couleur: ThemeQuinca.alerte,
+            ),
+          ),
+          Expanded(
+            child: _ItemResumeVente(
+              titre: "Total",
+              valeur: "${montantTotal.toInt()}",
+              couleur: ThemeQuinca.succes,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemResumeVente extends StatelessWidget {
+  final String titre;
+  final String valeur;
+  final Color couleur;
+
+  const _ItemResumeVente({
+    required this.titre,
+    required this.valeur,
+    required this.couleur,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          valeur,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: ThemeQuinca.titrePrincipal.copyWith(
+            color: couleur,
+            fontSize: 18,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(titre, style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12)),
+      ],
+    );
+  }
+}
+
+class _CarteVenteHistorique extends StatelessWidget {
+  final VenteRealisee vente;
+  final VoidCallback onTap;
+  final VoidCallback onMasquer;
+
+  const _CarteVenteHistorique({
+    required this.vente,
+    required this.onTap,
+    required this.onMasquer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: ThemeQuinca.bordure),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.035),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: ThemeQuinca.bleuPrincipal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: const Icon(
+                    Icons.receipt_long_outlined,
+                    color: ThemeQuinca.bleuPrincipal,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Contenu du Panier",
-                        style: GoogleFonts.urbanist(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        vente.numRecu,
+                        style:
+                            ThemeQuinca.titrePrincipal.copyWith(fontSize: 16),
                       ),
+                      const SizedBox(height: 3),
                       Text(
-                        "Rattaché au ${vente.numRecu}",
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: ThemeQuinca.texteSecondaire,
-                        ),
+                        vente.dateVente,
+                        style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12),
                       ),
                     ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: vente.panier.length,
-                  itemBuilder: (context, idx) {
-                    final item = vente.panier[idx];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.nomProduit,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Text(
-                                item.categorie,
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  color: ThemeQuinca.texteSecondaire,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "${(item.prixUnitaire * item.quantiteVendue).toInt()} FCFA",
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                "${item.prixUnitaire.toInt()} F x ${item.quantiteVendue}",
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  color: ThemeQuinca.texteSecondaire,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
                 ),
-              ),
-            ],
+                IconButton(
+                  onPressed: onMasquer,
+                  icon: const Icon(
+                    Icons.visibility_off_outlined,
+                    color: ThemeQuinca.rupture,
+                  ),
+                  tooltip: "Masquer",
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _InfoVente(
+                    titre: "Total",
+                    valeur: "${vente.montantTotal.toInt()} FCFA",
+                    couleur: ThemeQuinca.succes,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _InfoVente(
+                    titre: "Paiement",
+                    valeur: vente.moyenPaiement,
+                    couleur: ThemeQuinca.bleuPrincipal,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    vente.vendeurNom.isEmpty
+                        ? "Vendeur : non renseigne"
+                        : "Vendeur : ${vente.vendeurNom}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12),
+                  ),
+                ),
+                Text(
+                  "${vente.totalArticles} article(s)",
+                  style: ThemeQuinca.corpsTexte.copyWith(
+                    color: ThemeQuinca.texteFonce,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoVente extends StatelessWidget {
+  final String titre;
+  final String valeur;
+  final Color couleur;
+
+  const _InfoVente({
+    required this.titre,
+    required this.valeur,
+    required this.couleur,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      decoration: BoxDecoration(
+        color: couleur.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(titre, style: ThemeQuinca.corpsTexte.copyWith(fontSize: 11)),
+          const SizedBox(height: 2),
+          Text(
+            valeur,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: ThemeQuinca.titrePrincipal.copyWith(
+              color: couleur,
+              fontSize: 14,
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

@@ -156,6 +156,11 @@ class HookAuth extends ChangeNotifier {
     notifyListeners();
   }
 
+  void synchroniserUtilisateur(User user) {
+    _currentUser = user;
+    notifyListeners();
+  }
+
   // Outils internes pour éviter la répétition de code
   void _setLoading(bool value) {
     _isLoading = value;

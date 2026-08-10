@@ -3,12 +3,16 @@
 import 'package:flutter/material.dart';
 import '../../../coeur/theme/theme_quinca.dart'; // ◄ Centralisation de ta charte graphique
 import '../../auth/data/user.dart';
+import '../../auth/logique/hook.dart';
+import '../../auth/presentation/login.dart';
 import '../../produits/logique/stock_controller.dart'; 
 import '../../ventes/logique/vente_controller.dart';
 import '../../auth/logique/user_controller.dart';
 import '../../produits/presentation/produit.dart';
 import '../../ventes/presentation/vente.dart';
 import '../../ventes/presentation/historique_ventes.dart'; // ◄ AJOUTÉ : Importation indispensable pour HistoriqueVentesPage
+import '../../parametres/presentation/mon_profil_page.dart';
+import '../../parametres/presentation/parametres_page.dart';
 import 'admin.dart';
 import 'gerant.dart';
 
@@ -17,6 +21,7 @@ class RolePage extends StatefulWidget {
   final StockController stockController;
   final VenteController venteController;
   final UserController userController;
+  final HookAuth authHook;
 
   const RolePage({
     super.key,
@@ -24,6 +29,7 @@ class RolePage extends StatefulWidget {
     required this.stockController,
     required this.venteController,
     required this.userController,
+    required this.authHook,
   });
 
   @override
@@ -32,6 +38,53 @@ class RolePage extends StatefulWidget {
 
 class _RolePageState extends State<RolePage> {
   int _currentIndex = 0;
+
+  Future<void> _ouvrirProfil() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MonProfilPage(user: widget.user),
+      ),
+    );
+  }
+
+  Future<void> _ouvrirParametres() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ParametresPage(
+          user: widget.authHook.currentUser ?? widget.user,
+          authHook: widget.authHook,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _modifierMotDePasse() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ParametresPage(
+          user: widget.authHook.currentUser ?? widget.user,
+          authHook: widget.authHook,
+          sectionInitiale: SectionParametres.securite,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deconnecter() async {
+    await widget.authHook.deconnecter();
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Login(stockController: widget.stockController),
+      ),
+      (_) => false,
+    );
+  }
 
   /// Routeur interne : Évite les ternaires imbriqués complexes et lève les erreurs de parenthèses
   Widget _recupererPage() {
@@ -44,6 +97,10 @@ class _RolePageState extends State<RolePage> {
             venteController: widget.venteController,
             userController: widget.userController,
             user: widget.user,
+            onOuvrirProfil: _ouvrirProfil,
+            onOuvrirParametres: _ouvrirParametres,
+            onModifierMotDePasse: _modifierMotDePasse,
+            onDeconnecter: _deconnecter,
           );
         } else {
           // Ajusté selon tes commentaires : GerantPage prend uniquement user et stockController
@@ -51,6 +108,10 @@ class _RolePageState extends State<RolePage> {
             user: widget.user,
             stockController: widget.stockController,
             venteController: widget.venteController,
+            onOuvrirProfil: _ouvrirProfil,
+            onOuvrirParametres: _ouvrirParametres,
+            onModifierMotDePasse: _modifierMotDePasse,
+            onDeconnecter: _deconnecter,
             onAllerAuxVentes: () => setState(() => _currentIndex = 2), // Index des ventes
           );
         }
@@ -63,6 +124,7 @@ class _RolePageState extends State<RolePage> {
       case 2:
         return VentePage(
           venteController: widget.venteController,
+          user: widget.user,
         );
       case 3:
         return HistoriqueVentesPage(

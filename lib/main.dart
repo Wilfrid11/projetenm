@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
+import 'coeur/theme/theme_mode_controller.dart';
 import 'modules/auth/presentation/login.dart';
 import '../modules/produits/logique/stock_controller.dart'; // Import du contrôleur de stock global
 
@@ -19,14 +20,27 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: Login(stockController: _mainStockController),
-      debugShowCheckedModeBanner: false,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeModeController.mode,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          title: 'QuincaPro',
+          themeMode: mode,
+          theme: ThemeData(
+            brightness: Brightness.light,
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepPurple,
+              brightness: Brightness.dark,
+            ),
+          ),
+          home: Login(stockController: _mainStockController),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

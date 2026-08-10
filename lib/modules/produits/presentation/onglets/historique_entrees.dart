@@ -24,27 +24,35 @@ class _HistoriqueEntreesPageState extends State<HistoriqueEntreesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: widget.controller,
-      builder: (context, _) {
-        final entrees = widget.controller.historiqueEntrees.where((entree) {
-          final date = entree.createdAt;
-          if (date == null) return _periode == PeriodeHistorique.tout;
-          return dateDansPeriode(date, _periode);
-        }).toList();
+    return Scaffold(
+      backgroundColor: ThemeQuinca.fondGris,
+      appBar: AppBar(
+        title: const Text("Historique des entrees"),
+        backgroundColor: ThemeQuinca.bleuPrincipal,
+        foregroundColor: Colors.white,
+      ),
+      body: ListenableBuilder(
+        listenable: widget.controller,
+        builder: (context, _) {
+          final entrees = widget.controller.historiqueEntrees.where((entree) {
+            final date = entree.createdAt;
+            if (date == null) return _periode == PeriodeHistorique.tout;
+            return dateDansPeriode(date, _periode);
+          }).toList();
 
-        return Column(
-          children: [
-            FiltrePeriode(
-              valeur: _periode,
-              onChanged: (periode) => setState(() => _periode = periode),
-            ),
-            Expanded(
-              child: _buildListe(entrees),
-            ),
-          ],
-        );
-      },
+          return Column(
+            children: [
+              FiltrePeriode(
+                valeur: _periode,
+                onChanged: (periode) => setState(() => _periode = periode),
+              ),
+              Expanded(
+                child: _buildListe(entrees),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 

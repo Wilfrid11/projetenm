@@ -111,34 +111,47 @@ class EntreeFournisseur {
 // =======================================================
 
 class LigneVente {
+  final String produitId;
   final String nomProduit;
   final String categorie;
+  final String uniteVente;
   final int quantiteVendue;
   final double prixUnitaire;
   final double prixAchat;
 
   LigneVente({
+    this.produitId = '',
     required this.nomProduit,
     required this.categorie,
+    this.uniteVente = 'piece',
     required this.quantiteVendue,
     required this.prixUnitaire,
     required this.prixAchat,
   });
 
+  double get montantLigne => prixUnitaire * quantiteVendue;
+  double get beneficeLigne => (prixUnitaire - prixAchat) * quantiteVendue;
+
   Map<String, dynamic> toMap() {
     return {
+      'produitId': produitId,
       'nomProduit': nomProduit,
       'categorie': categorie,
+      'uniteVente': uniteVente,
       'quantiteVendue': quantiteVendue,
       'prixUnitaire': prixUnitaire,
       'prixAchat': prixAchat,
+      'montantLigne': montantLigne,
+      'beneficeLigne': beneficeLigne,
     };
   }
 
   factory LigneVente.fromMap(Map<String, dynamic> map) {
     return LigneVente(
+      produitId: map['produitId'] as String? ?? '',
       nomProduit: map['nomProduit'] as String? ?? '',
       categorie: map['categorie'] as String? ?? '',
+      uniteVente: map['uniteVente'] as String? ?? 'piece',
       quantiteVendue: (map['quantiteVendue'] as num?)?.toInt() ?? 0,
       prixUnitaire: (map['prixUnitaire'] as num?)?.toDouble() ?? 0,
       prixAchat: (map['prixAchat'] as num?)?.toDouble() ?? 0,
@@ -147,18 +160,34 @@ class LigneVente {
 }
 
 class VenteRealisee {
+  final String id;
   final String numRecu;
   final String boutiqueId;
   final String dateVente;
   final String moyenPaiement;
   final List<LigneVente> panier;
+  final String vendeurId;
+  final String vendeurNom;
+  final DateTime? createdAt;
+  final bool visible;
+  final double? montantRecu;
+  final double? monnaieRendue;
+  final String? notePaiement;
 
   VenteRealisee({
+    this.id = '',
     required this.numRecu,
     required this.boutiqueId,
     required this.dateVente,
     required this.moyenPaiement,
     required this.panier,
+    this.vendeurId = '',
+    this.vendeurNom = '',
+    this.createdAt,
+    this.visible = true,
+    this.montantRecu,
+    this.monnaieRendue,
+    this.notePaiement,
   });
 
   int get totalArticles =>
@@ -169,13 +198,29 @@ class VenteRealisee {
         (sum, item) => sum + (item.prixUnitaire * item.quantiteVendue),
       );
 
+  double get beneficeTotal => panier.fold(
+        0.0,
+        (sum, item) => sum + item.beneficeLigne,
+      );
+
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'numRecu': numRecu,
       'boutiqueId': boutiqueId,
       'dateVente': dateVente,
       'moyenPaiement': moyenPaiement,
       'panier': panier.map((ligne) => ligne.toMap()).toList(),
+      'vendeurId': vendeurId,
+      'vendeurNom': vendeurNom,
+      'createdAt': createdAt?.toIso8601String(),
+      'visible': visible,
+      'totalArticles': totalArticles,
+      'montantTotal': montantTotal,
+      'beneficeTotal': beneficeTotal,
+      'montantRecu': montantRecu,
+      'monnaieRendue': monnaieRendue,
+      'notePaiement': notePaiement,
     };
   }
 
@@ -183,6 +228,7 @@ class VenteRealisee {
     final panierBrut = map['panier'];
 
     return VenteRealisee(
+      id: map['id'] as String? ?? '',
       numRecu: map['numRecu'] as String? ?? '',
       boutiqueId: map['boutiqueId'] as String? ?? '',
       dateVente: map['dateVente'] as String? ?? '',
@@ -193,6 +239,13 @@ class VenteRealisee {
               .map(LigneVente.fromMap)
               .toList()
           : const [],
+      vendeurId: map['vendeurId'] as String? ?? '',
+      vendeurNom: map['vendeurNom'] as String? ?? '',
+      createdAt: _dateDepuisMap(map['createdAt']),
+      visible: map['visible'] as bool? ?? true,
+      montantRecu: (map['montantRecu'] as num?)?.toDouble(),
+      monnaieRendue: (map['monnaieRendue'] as num?)?.toDouble(),
+      notePaiement: map['notePaiement'] as String?,
     );
   }
 }

@@ -105,6 +105,7 @@ class _LoginState extends State<Login> {
           stockController: widget.stockController,
           venteController: venteController,
           userController: _userController,
+          authHook: _authHook,
         ),
       ),
     );

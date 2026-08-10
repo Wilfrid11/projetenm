@@ -172,175 +172,233 @@ class _CataloguePageState extends State<CataloguePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: _lignes.length,
-              itemBuilder: (context, index) {
-                final ligne = _lignes[index];
+    return Scaffold(
+      backgroundColor: ThemeQuinca.fondGris,
+      appBar: AppBar(
+        backgroundColor: ThemeQuinca.bleuPrincipal,
+        foregroundColor: Colors.white,
+        title: const Text("Catalogue"),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _EnteteCatalogue(nombreProduits: _lignes.length),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+                itemCount: _lignes.length,
+                itemBuilder: (context, index) {
+                  return _CarteFormulaireProduit(
+                    index: index,
+                    ligne: _lignes[index],
+                    categories: _categories,
+                    unitesVente: _unitesVente,
+                    peutSupprimer: _lignes.length > 1,
+                    onSupprimer: () => _supprimerLigne(index),
+                    onDropdownChange: () => setState(() {}),
+                  );
+                },
+              ),
+            ),
+            _BarreActionsCatalogue(
+              enregistrement: _enregistrement,
+              onAjouter: _ajouterLigne,
+              onEnregistrer: _enregistrerTout,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: ThemeQuinca.bordure),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: ligne["nom"],
-                                decoration: const InputDecoration(
-                                  labelText: "Nom *",
-                                  isDense: true,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => _supprimerLigne(index),
-                              icon: const Icon(
-                                Icons.remove_circle_outline,
-                                color: ThemeQuinca.rupture,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                initialValue: ligne["cat"]!.text,
-                                decoration: const InputDecoration(
-                                  labelText: "Categorie",
-                                  isDense: true,
-                                ),
-                                items: _categories
-                                    .map(
-                                      (categorie) => DropdownMenuItem(
-                                        value: categorie,
-                                        child: Text(
-                                          categorie,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (valeur) {
-                                  setState(() {
-                                    ligne["cat"]!.text = valeur!;
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                initialValue: ligne["unite"]!.text,
-                                decoration: const InputDecoration(
-                                  labelText: "Unite",
-                                  isDense: true,
-                                ),
-                                items: _unitesVente
-                                    .map(
-                                      (unite) => DropdownMenuItem(
-                                        value: unite,
-                                        child: Text(
-                                          unite,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (valeur) {
-                                  setState(() {
-                                    ligne["unite"]!.text = valeur!;
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: ligne["prixA"],
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: "P. Achat *",
-                                  isDense: true,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextField(
-                                controller: ligne["prixV"],
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: "P. Vente *",
-                                  isDense: true,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: ligne["stock"],
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: "Stock initial",
-                                  isDense: true,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextField(
-                                controller: ligne["seuil"],
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: "Seuil alerte",
-                                  isDense: true,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+class _EnteteCatalogue extends StatelessWidget {
+  final int nombreProduits;
+
+  const _EnteteCatalogue({required this.nombreProduits});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ThemeQuinca.bordure),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: ThemeQuinca.bleuPrincipal.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.playlist_add_rounded,
+              color: ThemeQuinca.bleuPrincipal,
             ),
           ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Ajouter au catalogue",
+                  style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 18),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  "$nombreProduits produit(s) en preparation",
+                  style: ThemeQuinca.corpsTexte,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CarteFormulaireProduit extends StatelessWidget {
+  final int index;
+  final Map<String, TextEditingController> ligne;
+  final List<String> categories;
+  final List<String> unitesVente;
+  final bool peutSupprimer;
+  final VoidCallback onSupprimer;
+  final VoidCallback onDropdownChange;
+
+  const _CarteFormulaireProduit({
+    required this.index,
+    required this.ligne,
+    required this.categories,
+    required this.unitesVente,
+    required this.peutSupprimer,
+    required this.onSupprimer,
+    required this.onDropdownChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ThemeQuinca.bordure),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _enregistrement ? null : _ajouterLigne,
-                  icon: const Icon(Icons.add),
-                  label: const Text("Autre ligne"),
+                child: Text(
+                  "Produit ${index + 1}",
+                  style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 17),
                 ),
               ),
-              const SizedBox(width: 12),
+              IconButton(
+                tooltip: "Retirer cette ligne",
+                onPressed: peutSupprimer ? onSupprimer : null,
+                icon: Icon(
+                  Icons.remove_circle_outline,
+                  color: peutSupprimer
+                      ? ThemeQuinca.rupture
+                      : ThemeQuinca.texteSecondaire,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _ChampCatalogue(
+            controller: ligne["nom"]!,
+            label: "Nom du produit *",
+            icone: Icons.inventory_2_outlined,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
               Expanded(
-                child: BtnPrincipal(
-                  texte: _enregistrement
-                      ? "Enregistrement..."
-                      : "Tout enregistrer",
-                  onPressed: _enregistrerTout,
-                  isLoading: _enregistrement,
+                child: _DropdownCatalogue(
+                  valeur: ligne["cat"]!.text,
+                  label: "Categorie",
+                  icone: Icons.category_outlined,
+                  options: categories,
+                  onChanged: (valeur) {
+                    ligne["cat"]!.text = valeur;
+                    onDropdownChange();
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _DropdownCatalogue(
+                  valeur: ligne["unite"]!.text,
+                  label: "Unite",
+                  icone: Icons.straighten_outlined,
+                  options: unitesVente,
+                  onChanged: (valeur) {
+                    ligne["unite"]!.text = valeur;
+                    onDropdownChange();
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _ChampCatalogue(
+                  controller: ligne["prixA"]!,
+                  label: "Prix achat *",
+                  icone: Icons.shopping_bag_outlined,
+                  type: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ChampCatalogue(
+                  controller: ligne["prixV"]!,
+                  label: "Prix vente *",
+                  icone: Icons.sell_outlined,
+                  type: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _ChampCatalogue(
+                  controller: ligne["stock"]!,
+                  label: "Stock initial",
+                  icone: Icons.numbers_outlined,
+                  type: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ChampCatalogue(
+                  controller: ligne["seuil"]!,
+                  label: "Seuil alerte",
+                  icone: Icons.warning_amber_rounded,
+                  type: TextInputType.number,
                 ),
               ),
             ],
@@ -349,4 +407,143 @@ class _CataloguePageState extends State<CataloguePage> {
       ),
     );
   }
+}
+
+class _ChampCatalogue extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final IconData icone;
+  final TextInputType type;
+
+  const _ChampCatalogue({
+    required this.controller,
+    required this.label,
+    required this.icone,
+    this.type = TextInputType.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      keyboardType: type,
+      decoration: _decorationCatalogue(label: label, icone: icone),
+    );
+  }
+}
+
+class _DropdownCatalogue extends StatelessWidget {
+  final String valeur;
+  final String label;
+  final IconData icone;
+  final List<String> options;
+  final ValueChanged<String> onChanged;
+
+  const _DropdownCatalogue({
+    required this.valeur,
+    required this.label,
+    required this.icone,
+    required this.options,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      initialValue: valeur,
+      isExpanded: true,
+      decoration: _decorationCatalogue(label: label, icone: icone),
+      items: options
+          .map(
+            (option) => DropdownMenuItem(
+              value: option,
+              child: Text(
+                option,
+                overflow: TextOverflow.ellipsis,
+                style: ThemeQuinca.corpsTexte.copyWith(
+                  color: ThemeQuinca.texteFonce,
+                ),
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (valeur) {
+        if (valeur != null) onChanged(valeur);
+      },
+    );
+  }
+}
+
+class _BarreActionsCatalogue extends StatelessWidget {
+  final bool enregistrement;
+  final VoidCallback onAjouter;
+  final VoidCallback onEnregistrer;
+
+  const _BarreActionsCatalogue({
+    required this.enregistrement,
+    required this.onAjouter,
+    required this.onEnregistrer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: ThemeQuinca.bordure)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: enregistrement ? null : onAjouter,
+              icon: const Icon(Icons.add),
+              label: const Text("Autre produit"),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: BtnPrincipal(
+              texte: enregistrement ? "Enregistrement..." : "Enregistrer",
+              onPressed: onEnregistrer,
+              isLoading: enregistrement,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+InputDecoration _decorationCatalogue({
+  required String label,
+  required IconData icone,
+}) {
+  return InputDecoration(
+    labelText: label,
+    labelStyle: ThemeQuinca.corpsTexte,
+    prefixIcon: Icon(icone, color: ThemeQuinca.bleuPrincipal, size: 20),
+    filled: true,
+    fillColor: ThemeQuinca.fondGris,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: ThemeQuinca.bordure),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: ThemeQuinca.bordure),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: ThemeQuinca.bleuPrincipal, width: 1.5),
+    ),
+  );
 }

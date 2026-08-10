@@ -13,6 +13,10 @@ class GerantPage extends StatelessWidget {
   final User user;
   final StockController stockController;
   final VenteController venteController; 
+  final VoidCallback onOuvrirProfil;
+  final VoidCallback onOuvrirParametres;
+  final VoidCallback onModifierMotDePasse;
+  final VoidCallback onDeconnecter;
   final VoidCallback? onAllerAuxVentes; // Pour changer d'onglet
 
   const GerantPage({
@@ -20,6 +24,10 @@ class GerantPage extends StatelessWidget {
     required this.user, 
     required this.stockController,
     required this.venteController, 
+    required this.onOuvrirProfil,
+    required this.onOuvrirParametres,
+    required this.onModifierMotDePasse,
+    required this.onDeconnecter,
     this.onAllerAuxVentes,
   });
 
@@ -120,9 +128,11 @@ class GerantPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              const CircleAvatar(
-                backgroundColor: Colors.white24,
-                child: Icon(Icons.person_outline, color: Colors.white),
+              _MenuProfilAccueil(
+                onOuvrirProfil: onOuvrirProfil,
+                onOuvrirParametres: onOuvrirParametres,
+                onModifierMotDePasse: onModifierMotDePasse,
+                onDeconnecter: onDeconnecter,
               ),
               const SizedBox(width: 12),
               Column(
@@ -231,6 +241,79 @@ class GerantPage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MenuProfilAccueil extends StatelessWidget {
+  final VoidCallback onOuvrirProfil;
+  final VoidCallback onOuvrirParametres;
+  final VoidCallback onModifierMotDePasse;
+  final VoidCallback onDeconnecter;
+
+  const _MenuProfilAccueil({
+    required this.onOuvrirProfil,
+    required this.onOuvrirParametres,
+    required this.onModifierMotDePasse,
+    required this.onDeconnecter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      tooltip: "Menu du profil",
+      offset: const Offset(0, 46),
+      onSelected: (valeur) {
+        switch (valeur) {
+          case 'profil':
+            onOuvrirProfil();
+            break;
+          case 'parametres':
+            onOuvrirParametres();
+            break;
+          case 'mot_de_passe':
+            onModifierMotDePasse();
+            break;
+          case 'deconnexion':
+            onDeconnecter();
+            break;
+        }
+      },
+      itemBuilder: (context) => const [
+        PopupMenuItem(
+          value: 'profil',
+          child: ListTile(
+            leading: Icon(Icons.person_outline),
+            title: Text("Mon profil"),
+          ),
+        ),
+        PopupMenuItem(
+          value: 'parametres',
+          child: ListTile(
+            leading: Icon(Icons.settings_outlined),
+            title: Text("Parametres"),
+          ),
+        ),
+        PopupMenuItem(
+          value: 'mot_de_passe',
+          child: ListTile(
+            leading: Icon(Icons.lock_outline),
+            title: Text("Modifier mot de passe"),
+          ),
+        ),
+        PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'deconnexion',
+          child: ListTile(
+            leading: Icon(Icons.logout_rounded),
+            title: Text("Deconnexion"),
+          ),
+        ),
+      ],
+      child: const CircleAvatar(
+        backgroundColor: Colors.white24,
+        child: Icon(Icons.person_outline, color: Colors.white),
       ),
     );
   }

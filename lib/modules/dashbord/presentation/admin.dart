@@ -15,6 +15,10 @@ class DashboardAdmin extends StatelessWidget {
   final VenteController venteController;
   final UserController userController;
   final User user;
+  final VoidCallback onOuvrirProfil;
+  final VoidCallback onOuvrirParametres;
+  final VoidCallback onModifierMotDePasse;
+  final VoidCallback onDeconnecter;
 
   const DashboardAdmin({
     super.key,
@@ -22,6 +26,10 @@ class DashboardAdmin extends StatelessWidget {
     required this.venteController,
     required this.userController,
     required this.user,
+    required this.onOuvrirProfil,
+    required this.onOuvrirParametres,
+    required this.onModifierMotDePasse,
+    required this.onDeconnecter,
   });
 
   @override
@@ -38,6 +46,12 @@ class DashboardAdmin extends StatelessWidget {
         return Scaffold(
           backgroundColor: ThemeQuinca.fondGris,
           appBar: AppBar(
+            leading: _MenuProfilAccueil(
+              onOuvrirProfil: onOuvrirProfil,
+              onOuvrirParametres: onOuvrirParametres,
+              onModifierMotDePasse: onModifierMotDePasse,
+              onDeconnecter: onDeconnecter,
+            ),
             title: Text(
               "Tableau de Bord Admin",
               style: ThemeQuinca.titrePrincipal.copyWith(color: Colors.white),
@@ -269,6 +283,82 @@ class DashboardAdmin extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MenuProfilAccueil extends StatelessWidget {
+  final VoidCallback onOuvrirProfil;
+  final VoidCallback onOuvrirParametres;
+  final VoidCallback onModifierMotDePasse;
+  final VoidCallback onDeconnecter;
+
+  const _MenuProfilAccueil({
+    required this.onOuvrirProfil,
+    required this.onOuvrirParametres,
+    required this.onModifierMotDePasse,
+    required this.onDeconnecter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      tooltip: "Menu du profil",
+      offset: const Offset(0, 46),
+      onSelected: (valeur) {
+        switch (valeur) {
+          case 'profil':
+            onOuvrirProfil();
+            break;
+          case 'parametres':
+            onOuvrirParametres();
+            break;
+          case 'mot_de_passe':
+            onModifierMotDePasse();
+            break;
+          case 'deconnexion':
+            onDeconnecter();
+            break;
+        }
+      },
+      itemBuilder: (context) => const [
+        PopupMenuItem(
+          value: 'profil',
+          child: ListTile(
+            leading: Icon(Icons.person_outline),
+            title: Text("Mon profil"),
+          ),
+        ),
+        PopupMenuItem(
+          value: 'parametres',
+          child: ListTile(
+            leading: Icon(Icons.settings_outlined),
+            title: Text("Parametres"),
+          ),
+        ),
+        PopupMenuItem(
+          value: 'mot_de_passe',
+          child: ListTile(
+            leading: Icon(Icons.lock_outline),
+            title: Text("Modifier mot de passe"),
+          ),
+        ),
+        PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'deconnexion',
+          child: ListTile(
+            leading: Icon(Icons.logout_rounded),
+            title: Text("Deconnexion"),
+          ),
+        ),
+      ],
+      child: const Padding(
+        padding: EdgeInsets.only(left: 12),
+        child: CircleAvatar(
+          backgroundColor: Colors.white24,
+          child: Icon(Icons.person_outline, color: Colors.white),
+        ),
       ),
     );
   }

@@ -156,105 +156,114 @@ class _ArrivagePageState extends State<ArrivagePage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: Listenable.merge([widget.controller, _fournisseurController]),
-      builder: (context, _) {
-        final produits = widget.controller.produits;
-        final fournisseurs = _fournisseurController.fournisseurs;
+    return Scaffold(
+      backgroundColor: ThemeQuinca.fondGris,
+      appBar: AppBar(
+        title: const Text("Arrivage"),
+        backgroundColor: ThemeQuinca.bleuPrincipal,
+        foregroundColor: Colors.white,
+      ),
+      body: ListenableBuilder(
+        listenable:
+            Listenable.merge([widget.controller, _fournisseurController]),
+        builder: (context, _) {
+          final produits = widget.controller.produits;
+          final fournisseurs = _fournisseurController.fournisseurs;
 
-        if (widget.controller.chargementProduits ||
-            _fournisseurController.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+          if (widget.controller.chargementProduits ||
+              _fournisseurController.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (produits.isEmpty) {
-          return const Center(
-            child: Text("Ajoutez d'abord des produits au catalogue."),
-          );
-        }
+          if (produits.isEmpty) {
+            return const Center(
+              child: Text("Ajoutez d'abord des produits au catalogue."),
+            );
+          }
 
-        if (fournisseurs.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: Text(
-                "Aucun fournisseur disponible. L'admin doit ajouter un fournisseur avant de valider un arrivage.",
-                textAlign: TextAlign.center,
-                style: ThemeQuinca.corpsTexte,
-              ),
-            ),
-          );
-        }
-
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DropdownButtonFormField<Fournisseur>(
-                initialValue: _fournisseurSelectionne,
-                decoration: ThemeQuinca.inputDecoration(
-                  label: "Fournisseur",
-                  icone: Icons.local_shipping_outlined,
+          if (fournisseurs.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: Text(
+                  "Aucun fournisseur disponible. L'admin doit ajouter un fournisseur avant de valider un arrivage.",
+                  textAlign: TextAlign.center,
+                  style: ThemeQuinca.corpsTexte,
                 ),
-                items: fournisseurs
-                    .map(
-                      (fournisseur) => DropdownMenuItem(
-                        value: fournisseur,
-                        child: Text(fournisseur.nom),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  setState(() => _fournisseurSelectionne = value);
-                },
               ),
-              const SizedBox(height: 16),
-              Text(
-                "Produits recus",
-                style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _lignes.length,
-                  itemBuilder: (context, index) {
-                    final ligne = _lignes[index];
-                    return _CarteLigneArrivage(
-                      ligne: ligne,
-                      produits: produits,
-                      index: index,
-                      onSupprimer: () => _supprimerLigne(index),
-                      onChanged: () => setState(() {}),
-                    );
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButtonFormField<Fournisseur>(
+                  initialValue: _fournisseurSelectionne,
+                  decoration: ThemeQuinca.inputDecoration(
+                    label: "Fournisseur",
+                    icone: Icons.local_shipping_outlined,
+                  ),
+                  items: fournisseurs
+                      .map(
+                        (fournisseur) => DropdownMenuItem(
+                          value: fournisseur,
+                          child: Text(fournisseur.nom),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() => _fournisseurSelectionne = value);
                   },
                 ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _validationEnCours ? null : _ajouterLigne,
-                      icon: const Icon(Icons.add),
-                      label: const Text("Ajouter une ligne"),
-                    ),
+                const SizedBox(height: 16),
+                Text(
+                  "Produits recus",
+                  style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 16),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _lignes.length,
+                    itemBuilder: (context, index) {
+                      final ligne = _lignes[index];
+                      return _CarteLigneArrivage(
+                        ligne: ligne,
+                        produits: produits,
+                        index: index,
+                        onSupprimer: () => _supprimerLigne(index),
+                        onChanged: () => setState(() {}),
+                      );
+                    },
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: BtnPrincipal(
-                      texte: _validationEnCours
-                          ? "Validation..."
-                          : "Valider l'arrivage",
-                      onPressed: _validerArrivage,
-                      isLoading: _validationEnCours,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _validationEnCours ? null : _ajouterLigne,
+                        icon: const Icon(Icons.add),
+                        label: const Text("Ajouter une ligne"),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: BtnPrincipal(
+                        texte: _validationEnCours
+                            ? "Validation..."
+                            : "Valider l'arrivage",
+                        onPressed: _validerArrivage,
+                        isLoading: _validationEnCours,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -293,77 +302,185 @@ class _CarteLigneArrivage extends StatelessWidget {
       }
     }
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: ThemeQuinca.bordure),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ThemeQuinca.bordure),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: ligne.produitId,
-                    decoration: const InputDecoration(
-                      labelText: "Produit",
-                      isDense: true,
-                    ),
-                    items: produits
-                        .map(
-                          (produit) => DropdownMenuItem(
-                            value: produit.id,
-                            child: Text(produit.nom),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      ligne.produitId = value;
-                      onChanged();
-                    },
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: ThemeQuinca.bleuPrincipal.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  "${index + 1}",
+                  style: ThemeQuinca.titrePrincipal.copyWith(
+                    color: ThemeQuinca.bleuPrincipal,
+                    fontSize: 14,
                   ),
                 ),
-                IconButton(
-                  onPressed: onSupprimer,
-                  icon: const Icon(
-                    Icons.remove_circle_outline,
-                    color: ThemeQuinca.rupture,
-                  ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "Produit recu",
+                  style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 16),
                 ),
-              ],
+              ),
+              IconButton(
+                onPressed: onSupprimer,
+                icon: const Icon(
+                  Icons.remove_circle_outline,
+                  color: ThemeQuinca.rupture,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<String>(
+            initialValue: ligne.produitId,
+            isExpanded: true,
+            decoration: _decorationArrivage(
+              label: "Choisir le produit",
+              icone: Icons.inventory_2_outlined,
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: ligne.quantiteCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: produitSelectionne == null
-                          ? "Quantite recue"
-                          : "Quantite (${produitSelectionne.uniteVente})",
-                      isDense: true,
+            items: produits
+                .map(
+                  (produit) => DropdownMenuItem(
+                    value: produit.id,
+                    child: Text(
+                      produit.nom,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    produitSelectionne == null
-                        ? "Stock actuel : -"
-                        : "Stock actuel : ${produitSelectionne.quantite} ${produitSelectionne.uniteVente}",
-                    style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12),
+                )
+                .toList(),
+            onChanged: (value) {
+              ligne.produitId = value;
+              onChanged();
+            },
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: ligne.quantiteCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: _decorationArrivage(
+                    label: produitSelectionne == null
+                        ? "Quantite recue"
+                        : "Quantite (${produitSelectionne.uniteVente})",
+                    icone: Icons.add_box_outlined,
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _StockActuelArrivage(produit: produitSelectionne),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
+}
+
+class _StockActuelArrivage extends StatelessWidget {
+  final Produit? produit;
+
+  const _StockActuelArrivage({required this.produit});
+
+  @override
+  Widget build(BuildContext context) {
+    final stock = produit == null
+        ? "-"
+        : "${produit!.quantite} ${produit!.uniteVente}";
+
+    return Container(
+      height: 58,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: ThemeQuinca.fondGris,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ThemeQuinca.bordure),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.warehouse_outlined,
+            color: ThemeQuinca.bleuPrincipal,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Stock actuel",
+                  style: ThemeQuinca.corpsTexte.copyWith(fontSize: 11),
+                ),
+                Text(
+                  stock,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+InputDecoration _decorationArrivage({
+  required String label,
+  required IconData icone,
+}) {
+  return InputDecoration(
+    labelText: label,
+    labelStyle: ThemeQuinca.corpsTexte,
+    prefixIcon: Icon(icone, color: ThemeQuinca.bleuPrincipal, size: 20),
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: ThemeQuinca.bordure),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: ThemeQuinca.bordure),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(
+        color: ThemeQuinca.bleuPrincipal,
+        width: 1.5,
+      ),
+    ),
+  );
 }

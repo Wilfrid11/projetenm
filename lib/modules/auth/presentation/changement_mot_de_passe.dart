@@ -80,6 +80,7 @@ class _ChangementMotDePassePageState extends State<ChangementMotDePassePage> {
           stockController: widget.stockController,
           venteController: widget.venteController,
           userController: widget.userController,
+          authHook: widget.authHook,
         ),
       ),
     );
