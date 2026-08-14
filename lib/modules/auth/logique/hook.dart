@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../../coeur/notifications/fcm_service.dart';
 import '../data/depot_firebase.dart';
 import '../data/user.dart';
 import 'password_utils.dart';
@@ -9,6 +10,7 @@ import 'telephone_utils.dart';
 
 class HookAuth extends ChangeNotifier {
   final DepotAuthFirebase _depot = DepotAuthFirebase();
+  final FcmService _fcmService = FcmService.instance;
 
   User? _currentUser;
   bool _isLoading = false;
@@ -36,6 +38,7 @@ class HookAuth extends ChangeNotifier {
 
       if (user != null && user.actif) {
         _currentUser = user;
+        await _fcmService.synchroniserTokenUtilisateur(user);
         _setLoading(false);
         return true;
       }
@@ -95,6 +98,7 @@ class HookAuth extends ChangeNotifier {
       }
 
       _currentUser = user;
+      await _fcmService.synchroniserTokenUtilisateur(user);
       _setLoading(false);
       return true;
     } on firebase_auth.FirebaseAuthException catch (e) {
@@ -135,6 +139,9 @@ class HookAuth extends ChangeNotifier {
       }
 
       _currentUser = await _depot.chargerUtilisateur(_currentUser!.id);
+      if (_currentUser != null) {
+        await _fcmService.synchroniserTokenUtilisateur(_currentUser!);
+      }
       _setLoading(false);
       return true;
     } on firebase_auth.FirebaseAuthException catch (e) {
@@ -150,6 +157,7 @@ class HookAuth extends ChangeNotifier {
 
   /// Déconnexion
   Future<void> deconnecter() async {
+    await _fcmService.oublierTokenUtilisateur(_currentUser);
     await _depot.deconnecter();
     _currentUser = null;
     _clearError();

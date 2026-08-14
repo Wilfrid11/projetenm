@@ -87,17 +87,11 @@ class _ProduitPageState extends State<ProduitPage> {
                     : listeFiltree.isEmpty
                         ? const _EtatVideProduits()
                         : ListView.builder(
-                            padding: const EdgeInsets.only(top: 8, bottom: 20),
+                            padding: const EdgeInsets.fromLTRB(12, 4, 12, 20),
                             itemCount: listeFiltree.length,
                             itemBuilder: (context, index) {
-                              return Center(
-                                child: ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 560),
-                                  child: CarteProduit(
-                                    produit: listeFiltree[index],
-                                  ),
-                                ),
+                              return CarteProduit(
+                                produit: listeFiltree[index],
                               );
                             },
                           ),

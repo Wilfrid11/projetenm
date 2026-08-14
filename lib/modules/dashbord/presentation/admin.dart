@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import '../../../coeur/theme/theme_quinca.dart';
 import '../../produits/logique/stock_controller.dart';
 import '../../ventes/logique/vente_controller.dart';
-import '../../produits/presentation/alertes_stock.dart';
 import '../../auth/logique/user_controller.dart';
 import '../../auth/presentation/gestion_utilisateurs.dart';
 import '../../auth/data/user.dart';
 import '../../fournisseurs/presentation/fournisseurs_page.dart';
+import '../../notifications/presentation/cloche_notifications.dart';
 
 class DashboardAdmin extends StatelessWidget {
   final StockController stockController;
@@ -59,43 +59,7 @@ class DashboardAdmin extends StatelessWidget {
             backgroundColor: ThemeQuinca.bleuPrincipal,
             elevation: 0,
             actions: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AlertesStockPage(controller: stockController),
-                        ),
-                      );
-                    },
-                  ),
-                  if (nbrRuptures > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: ThemeQuinca.rupture,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          '$nbrRuptures',
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              ClocheNotifications(user: user),
               const SizedBox(width: 8),
             ],
           ),

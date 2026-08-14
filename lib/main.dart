@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
+import 'coeur/notifications/fcm_service.dart';
 import 'coeur/theme/theme_mode_controller.dart';
 import 'modules/auth/presentation/login.dart';
 import '../modules/produits/logique/stock_controller.dart'; // Import du contrôleur de stock global
@@ -10,6 +11,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await FcmService.instance.initialiser();
   runApp(const MyApp());
 }
 final StockController _mainStockController = StockController();

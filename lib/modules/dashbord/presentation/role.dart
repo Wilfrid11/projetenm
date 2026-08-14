@@ -55,6 +55,7 @@ class _RolePageState extends State<RolePage> {
         builder: (context) => ParametresPage(
           user: widget.authHook.currentUser ?? widget.user,
           authHook: widget.authHook,
+          onDeconnecter: _deconnecter,
         ),
       ),
     );
@@ -68,6 +69,7 @@ class _RolePageState extends State<RolePage> {
           user: widget.authHook.currentUser ?? widget.user,
           authHook: widget.authHook,
           sectionInitiale: SectionParametres.securite,
+          onDeconnecter: _deconnecter,
         ),
       ),
     );

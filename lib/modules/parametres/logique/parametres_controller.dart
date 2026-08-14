@@ -20,6 +20,10 @@ class ParametresController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get erreur => _erreur;
 
+  Future<AbonnementBoutique> chargerAbonnement() {
+    return _depot.chargerAbonnement(_user.boutiqueId);
+  }
+
   Future<bool> modifierInfosPersonnelles({
     required String nom,
     required String prenom,

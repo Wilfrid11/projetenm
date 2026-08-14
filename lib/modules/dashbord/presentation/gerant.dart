@@ -6,8 +6,8 @@ import '../../auth/data/user.dart';
 import '../../produits/logique/stock_controller.dart';
 import '../../ventes/logique/vente_controller.dart'; 
 import '../../../coeur/theme/theme_quinca.dart'; // Chemin d'import corrigé
-import '../../produits/presentation/alertes_stock.dart'; // Import de la page d'alertes
 import '../../produits/presentation/onglets/arrivage.dart'; // Import du nouvel arrivage
+import '../../notifications/presentation/cloche_notifications.dart';
 
 class GerantPage extends StatelessWidget {
   final User user;
@@ -151,35 +151,7 @@ class GerantPage extends StatelessWidget {
           ),
           Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AlertesStockPage(controller: stockController),
-                    ),
-                  );
-                },
-              ),
-              if (stockController.produitsEnRupture.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: ThemeQuinca.rupture,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    '${stockController.produitsEnRupture.length}',
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+              ClocheNotifications(user: user),
             ],
           ),
         ],

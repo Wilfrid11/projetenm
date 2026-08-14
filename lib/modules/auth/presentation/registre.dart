@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../coeur/theme/theme_quinca.dart';
 import '../../../coeur/composants/btn_principal.dart';
@@ -10,7 +11,13 @@ import '../../produits/logique/stock_controller.dart';
 class RegistrePage extends StatefulWidget {
   final HookAuth authHook;
   final StockController stockController;
-  const RegistrePage({super.key, required this.authHook, required this.stockController});
+  final VoidCallback? onRetour;
+
+  const RegistrePage(
+      {super.key,
+      required this.authHook,
+      required this.stockController,
+      this.onRetour});
 
   @override
   State<RegistrePage> createState() => _RegistrePageState();
@@ -57,7 +64,9 @@ class _RegistrePageState extends State<RegistrePage> {
     if (_formKeys[_currentStep].currentState!.validate()) {
       if (_currentStep < 2) {
         setState(() => _currentStep++);
-        _pageController.animateToPage(_currentStep, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+        _pageController.animateToPage(_currentStep,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut);
       }
     }
   }
@@ -65,8 +74,24 @@ class _RegistrePageState extends State<RegistrePage> {
   void _prevStep() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
-      _pageController.animateToPage(_currentStep, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pageController.animateToPage(_currentStep,
+          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
+  }
+
+  void _retour() {
+    if (_currentStep > 0) {
+      _prevStep();
+      return;
+    }
+
+    final callback = widget.onRetour;
+    if (callback != null) {
+      callback();
+      return;
+    }
+
+    Navigator.pop(context);
   }
 
   void _procederALinscription() async {
@@ -87,7 +112,9 @@ class _RegistrePageState extends State<RegistrePage> {
         Navigator.pop(context); // Redirige vers la page de connexion
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(widget.authHook.errorMessage ?? "Erreur d'inscription")),
+          SnackBar(
+              content:
+                  Text(widget.authHook.errorMessage ?? "Erreur d'inscription")),
         );
       }
     }
@@ -98,7 +125,9 @@ class _RegistrePageState extends State<RegistrePage> {
     return Scaffold(
       backgroundColor: ThemeQuinca.fondGris,
       appBar: AppBar(
-        title: Text("Création de compte", style: GoogleFonts.urbanist(fontWeight: FontWeight.bold)),
+        automaticallyImplyLeading: false,
+        title: Text("Création de compte",
+            style: GoogleFonts.urbanist(fontWeight: FontWeight.bold)),
         backgroundColor: ThemeQuinca.bleuPrincipal,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -123,13 +152,20 @@ class _RegistrePageState extends State<RegistrePage> {
         children: [
           Text("Votre Quincaillerie", style: ThemeQuinca.titrePrincipal),
           const SizedBox(height: 20),
-          _buildField("Nom de l'établissement", _boutiqueController, Icons.store_outlined),
-          _buildField("Adresse complète", _adresseController, Icons.location_on_outlined),
+          _buildField("Nom de l'établissement", _boutiqueController,
+              Icons.store_outlined),
+          _buildField("Adresse complète", _adresseController,
+              Icons.location_on_outlined),
           Row(
             children: [
-              Expanded(child: _buildField("Ville", _villeController, Icons.map_outlined)),
+              Expanded(
+                  child: _buildField(
+                      "Ville", _villeController, Icons.map_outlined)),
               const SizedBox(width: 12),
-              Expanded(child: _buildField("Tél. Boutique", _telBoutiqueController, Icons.phone_callback, keyboard: TextInputType.phone)),
+              Expanded(
+                  child: _buildField("Tél. Boutique", _telBoutiqueController,
+                      Icons.phone_callback,
+                      keyboard: TextInputType.phone)),
             ],
           ),
           const SizedBox(height: 30),
@@ -149,15 +185,17 @@ class _RegistrePageState extends State<RegistrePage> {
           const SizedBox(height: 20),
           _buildField("Nom", _nomController, Icons.person_outline),
           _buildField("Prénom", _prenomController, Icons.badge_outlined),
-          _buildField("Téléphone Personnel", _telController, Icons.phone_android, keyboard: TextInputType.phone),
-          _buildField("Mot de passe (6 chiffres)", _motDePasseController, Icons.lock_outline, keyboard: TextInputType.number, obscure: true),
+          _buildField(
+              "Téléphone Personnel", _telController, Icons.phone_android,
+              keyboard: TextInputType.phone),
+          _buildField("Mot de passe (6 chiffres)", _motDePasseController,
+              Icons.lock_outline,
+              keyboard: TextInputType.number, obscure: true),
           const SizedBox(height: 30),
-          Row(
-            children: [
-              Expanded(child: OutlinedButton(onPressed: _prevStep, child: const Text("Retour"))),
-              const SizedBox(width: 12),
-              Expanded(child: _btnAction("Suivant", _nextStep)),
-            ],
+          Align(
+            alignment: Alignment.centerRight,
+            child:
+                SizedBox(width: 150, child: _btnAction("Suivant", _nextStep)),
           ),
         ],
       ),
@@ -170,7 +208,8 @@ class _RegistrePageState extends State<RegistrePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.verified_user_outlined, size: 80, color: ThemeQuinca.bleuPrincipal),
+          const Icon(Icons.verified_user_outlined,
+              size: 80, color: ThemeQuinca.bleuPrincipal),
           const SizedBox(height: 24),
           Text("Offre de bienvenue", style: ThemeQuinca.titrePrincipal),
           const SizedBox(height: 12),
@@ -183,14 +222,21 @@ class _RegistrePageState extends State<RegistrePage> {
           ListenableBuilder(
             listenable: widget.authHook,
             builder: (context, child) {
-              return BtnPrincipal(
-                texte: "Confirmer la création",
-                onPressed: _procederALinscription,
-                isLoading: widget.authHook.isLoading,
+              return Align(
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: 240,
+                  child: BtnPrincipal(
+                    texte: "Confirmer",
+                    onPressed: _procederALinscription,
+                    isLoading: widget.authHook.isLoading,
+                  ),
+                ),
               );
             },
           ),
-          TextButton(onPressed: _prevStep, child: const Text("Modifier mes infos")),
+          TextButton(
+              onPressed: _retour, child: const Text("Modifier mes infos")),
         ],
       ),
     );
@@ -203,13 +249,31 @@ class _RegistrePageState extends State<RegistrePage> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, IconData icon, {TextInputType keyboard = TextInputType.text, bool obscure = false}) {
+  Widget _buildField(
+      String label, TextEditingController controller, IconData icon,
+      {TextInputType keyboard = TextInputType.text, bool obscure = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: TextFormField(
         controller: controller,
         obscureText: obscure,
         keyboardType: keyboard,
+        maxLength: controller == _motDePasseController ? 6 : null,
+        inputFormatters: controller == _motDePasseController
+            ? [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(6),
+              ]
+            : null,
+        buildCounter: controller == _motDePasseController
+            ? (
+                context, {
+                required currentLength,
+                required isFocused,
+                required maxLength,
+              }) =>
+                null
+            : null,
         decoration: ThemeQuinca.inputDecoration(label: label, icone: icon),
         validator: (v) {
           if (v == null || v.isEmpty) {

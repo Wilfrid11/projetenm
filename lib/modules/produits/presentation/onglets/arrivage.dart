@@ -162,6 +162,14 @@ class _ArrivagePageState extends State<ArrivagePage> {
         title: const Text("Arrivage"),
         backgroundColor: ThemeQuinca.bleuPrincipal,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: "Ajouter une ligne",
+            onPressed: _validationEnCours ? null : _ajouterLigne,
+            icon: const Icon(Icons.add_rounded, size: 30),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: ListenableBuilder(
         listenable:
@@ -218,9 +226,26 @@ class _ArrivagePageState extends State<ArrivagePage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  "Produits recus",
-                  style: ThemeQuinca.titrePrincipal.copyWith(fontSize: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "Produits recus",
+                        style: ThemeQuinca.titrePrincipal.copyWith(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    IconButton.filled(
+                      tooltip: "Ajouter une ligne",
+                      onPressed: _validationEnCours ? null : _ajouterLigne,
+                      icon: const Icon(Icons.add_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: ThemeQuinca.bleuPrincipal,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Expanded(
@@ -238,26 +263,18 @@ class _ArrivagePageState extends State<ArrivagePage> {
                     },
                   ),
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _validationEnCours ? null : _ajouterLigne,
-                        icon: const Icon(Icons.add),
-                        label: const Text("Ajouter une ligne"),
-                      ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: 210,
+                    child: BtnPrincipal(
+                      texte: _validationEnCours
+                          ? "Validation..."
+                          : "Valider l'arrivage",
+                      onPressed: _validerArrivage,
+                      isLoading: _validationEnCours,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: BtnPrincipal(
-                        texte: _validationEnCours
-                            ? "Validation..."
-                            : "Valider l'arrivage",
-                        onPressed: _validerArrivage,
-                        isLoading: _validationEnCours,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -412,9 +429,8 @@ class _StockActuelArrivage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stock = produit == null
-        ? "-"
-        : "${produit!.quantite} ${produit!.uniteVente}";
+    final stock =
+        produit == null ? "-" : "${produit!.quantite} ${produit!.uniteVente}";
 
     return Container(
       height: 58,

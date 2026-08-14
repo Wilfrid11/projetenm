@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../coeur/composants/btn_principal.dart';
-import '../../../coeur/composants/pin_input.dart';
 import '../../../coeur/theme/theme_quinca.dart';
 import '../../dashbord/presentation/role.dart';
 import '../../produits/logique/stock_controller.dart';
@@ -31,6 +31,7 @@ class _LoginState extends State<Login> {
   final UserController _userController = UserController();
   final HookAuth _authHook = HookAuth();
   bool _enChargement = false;
+  bool _masquerMotDePasse = true;
 
   @override
   void dispose() {
@@ -172,6 +173,10 @@ class _LoginState extends State<Login> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
                         style: GoogleFonts.inter(
                           color: const Color(0xFF0F172A),
                         ),
@@ -183,28 +188,33 @@ class _LoginState extends State<Login> {
                           return null;
                         },
                         decoration: InputDecoration(
-                          prefixIcon: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                right: BorderSide(color: ThemeQuinca.bordure),
-                              ),
-                            ),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 12, right: 8),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(
-                                  Icons.phone_android_outlined,
+                                  Icons.phone_android_rounded,
                                   size: 20,
-                                  color: ThemeQuinca.texteSecondaire,
+                                  color: ThemeQuinca.bleuPrincipal,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "+229",
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    color: ThemeQuinca.bleuPrincipal,
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: ThemeQuinca.bleuPrincipal
+                                        .withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "+229",
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w800,
+                                      color: ThemeQuinca.bleuPrincipal,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -237,16 +247,89 @@ class _LoginState extends State<Login> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Text(
-                        "Mot de passe (6 chiffres)",
-                        style: ThemeQuinca.corpsTexte.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      PinInput(
+                      TextFormField(
                         controller: _pinController,
-                        onComplet: (_) => _soumettre(),
+                        keyboardType: TextInputType.number,
+                        obscureText: _masquerMotDePasse,
+                        maxLength: 6,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(6),
+                        ],
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF0F172A),
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2,
+                        ),
+                        validator: (value) {
+                          if (value == null ||
+                              !motDePasseSixChiffresValide(value.trim())) {
+                            return "Mot de passe invalide";
+                          }
+                          return null;
+                        },
+                        onFieldSubmitted: (_) => _soumettre(),
+                        buildCounter: (
+                          context, {
+                          required currentLength,
+                          required isFocused,
+                          required maxLength,
+                        }) =>
+                            null,
+                        decoration: InputDecoration(
+                          labelText: "Mot de passe",
+                          hintText: "6 chiffres",
+                          prefixIcon: const Icon(
+                            Icons.lock_outline_rounded,
+                            color: ThemeQuinca.bleuPrincipal,
+                          ),
+                          suffixIcon: IconButton(
+                            tooltip:
+                                _masquerMotDePasse ? "Afficher" : "Masquer",
+                            icon: Icon(
+                              _masquerMotDePasse
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: ThemeQuinca.texteSecondaire,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _masquerMotDePasse = !_masquerMotDePasse;
+                              });
+                            },
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: ThemeQuinca.bordure,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: ThemeQuinca.bordure,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: ThemeQuinca.bleuPrincipal,
+                              width: 2,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: ThemeQuinca.rupture,
+                            ),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 32),
                       BtnPrincipal(

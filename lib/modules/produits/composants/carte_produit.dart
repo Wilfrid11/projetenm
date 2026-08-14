@@ -22,62 +22,79 @@ class CarteProduit extends StatelessWidget {
 
     return InkWell(
       onTap: () => _ouvrirDetails(context),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: statut.couleur.withValues(alpha: 0.28)),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: ThemeQuinca.bordure),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.025),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _PastilleStatut(couleur: statut.couleur),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            _PastilleStatut(couleur: statut.couleur),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    produit.nom,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.urbanist(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: ThemeQuinca.texteFonce,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    "${produit.reference.isEmpty ? 'Ref auto' : produit.reference}  |  ${produit.categorie}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ThemeQuinca.corpsTexte.copyWith(fontSize: 11),
+                  ),
+                  const SizedBox(height: 7),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
                     children: [
-                      Text(
-                        produit.nom,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.urbanist(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: ThemeQuinca.texteFonce,
-                        ),
+                      _InfoCompacte(
+                        texte: "${produit.quantite} ${produit.uniteVente}",
+                        icone: Icons.inventory_2_outlined,
+                        couleur: statut.couleur,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "${produit.reference.isEmpty ? 'Ref auto' : produit.reference} - ${produit.categorie}",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: ThemeQuinca.corpsTexte.copyWith(fontSize: 12),
+                      _InfoCompacte(
+                        texte: "${produit.prixVente.toInt()} FCFA",
+                        icone: Icons.sell_outlined,
+                        couleur: ThemeQuinca.bleuPrincipal,
                       ),
                     ],
                   ),
-                ),
-                _BadgeStatut(statut: statut),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 10),
-            _BandeauProduit(
-              stock: "${produit.quantite} ${produit.uniteVente}",
-              prix: "${produit.prixVente.toInt()} FCFA",
-              couleur: statut.couleur,
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _BadgeStatut(statut: statut),
+                const SizedBox(height: 8),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: ThemeQuinca.texteSecondaire,
+                ),
+              ],
             ),
           ],
         ),
@@ -118,7 +135,10 @@ class CarteProduit extends StatelessWidget {
               const SizedBox(height: 16),
               _DetailProduit(titre: "Reference", valeur: produit.reference),
               _DetailProduit(titre: "Categorie", valeur: produit.categorie),
-              _DetailProduit(titre: "Unite de vente", valeur: produit.uniteVente),
+              _DetailProduit(
+                titre: "Unite de vente",
+                valeur: produit.uniteVente,
+              ),
               _DetailProduit(
                 titre: "Stock disponible",
                 valeur: "${produit.quantite} ${produit.uniteVente}",
@@ -182,13 +202,13 @@ class _PastilleStatut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 42,
-      height: 42,
+      width: 38,
+      height: 38,
       decoration: BoxDecoration(
-        color: couleur.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(10),
+        color: couleur.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(9),
       ),
-      child: Icon(Icons.inventory_2_outlined, color: couleur),
+      child: Icon(Icons.inventory_2_outlined, color: couleur, size: 20),
     );
   }
 }
@@ -201,16 +221,16 @@ class _BadgeStatut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: statut.couleur.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         statut.libelle,
         style: GoogleFonts.inter(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
           color: statut.couleur,
         ),
       ),
@@ -218,79 +238,42 @@ class _BadgeStatut extends StatelessWidget {
   }
 }
 
-class _BandeauProduit extends StatelessWidget {
-  final String stock;
-  final String prix;
+class _InfoCompacte extends StatelessWidget {
+  final String texte;
+  final IconData icone;
   final Color couleur;
 
-  const _BandeauProduit({
-    required this.stock,
-    required this.prix,
+  const _InfoCompacte({
+    required this.texte,
+    required this.icone,
     required this.couleur,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: ThemeQuinca.fondGris,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: ThemeQuinca.bordure),
+        color: couleur.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: _MiniInfoProduit(
-              titre: "Stock",
-              valeur: stock,
-              couleur: couleur,
-            ),
-          ),
-          Container(width: 1, height: 28, color: ThemeQuinca.bordure),
-          Expanded(
-            child: _MiniInfoProduit(
-              titre: "Prix",
-              valeur: prix,
-              couleur: ThemeQuinca.bleuPrincipal,
+          Icon(icone, size: 13, color: couleur),
+          const SizedBox(width: 4),
+          Text(
+            texte,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: couleur,
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _MiniInfoProduit extends StatelessWidget {
-  final String titre;
-  final String valeur;
-  final Color couleur;
-
-  const _MiniInfoProduit({
-    required this.titre,
-    required this.valeur,
-    required this.couleur,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          titre,
-          style: ThemeQuinca.corpsTexte.copyWith(fontSize: 10),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          valeur,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: ThemeQuinca.titrePrincipal.copyWith(
-            color: couleur,
-            fontSize: 13,
-          ),
-        ),
-      ],
     );
   }
 }

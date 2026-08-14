@@ -18,12 +18,14 @@ class ParametresPage extends StatefulWidget {
   final User user;
   final HookAuth authHook;
   final SectionParametres? sectionInitiale;
+  final Future<void> Function()? onDeconnecter;
 
   const ParametresPage({
     super.key,
     required this.user,
     required this.authHook,
     this.sectionInitiale,
+    this.onDeconnecter,
   });
 
   @override
@@ -77,6 +79,8 @@ class _ParametresPageState extends State<ParametresPage> {
                   miseEnAvant: section == widget.sectionInitiale,
                   onTap: () => _ouvrirSection(section),
                 ),
+              const SizedBox(height: 8),
+              _BoutonDeconnexion(onPressed: _deconnecter),
             ],
           ),
         );
@@ -85,6 +89,17 @@ class _ParametresPageState extends State<ParametresPage> {
   }
 
   Future<void> _ouvrirSection(SectionParametres section) async {
+    if (!widget.user.isAdmin &&
+        (section == SectionParametres.boutique ||
+            section == SectionParametres.abonnement)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Cette section est reservee a l'administrateur."),
+        ),
+      );
+      return;
+    }
+
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -96,6 +111,18 @@ class _ParametresPageState extends State<ParametresPage> {
       ),
     );
     widget.authHook.synchroniserUtilisateur(_controller.user);
+  }
+
+  Future<void> _deconnecter() async {
+    final action = widget.onDeconnecter;
+    if (action != null) {
+      await action();
+      return;
+    }
+
+    await widget.authHook.deconnecter();
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 }
 
@@ -264,25 +291,57 @@ class _DetailSectionParametresState extends State<_DetailSectionParametres> {
           ),
         ];
       case SectionParametres.abonnement:
-        return const [
-          _ChampLecture(
-            icone: Icons.workspace_premium_outlined,
-            titre: "Forfait",
-            valeur: "Gratuit",
-          ),
-          _ChampLecture(
-            icone: Icons.check_circle_outline,
-            titre: "Statut",
-            valeur: "Actif",
-          ),
-          _ChampLecture(
-            icone: Icons.event_outlined,
-            titre: "Validite",
-            valeur: "Non definie",
-          ),
-          _AlerteInfo(
-            texte:
-                "Le suivi d'abonnement est pret cote interface. Le paiement sera branche plus tard.",
+        return [
+          FutureBuilder(
+            future: widget.controller.chargerAbonnement(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              if (snapshot.hasError || !snapshot.hasData) {
+                return const _AlerteInfo(
+                  texte: "Impossible de charger l'abonnement pour le moment.",
+                );
+              }
+
+              final abonnement = snapshot.data!;
+              return Column(
+                children: [
+                  _ChampLecture(
+                    icone: Icons.workspace_premium_outlined,
+                    titre: "Forfait",
+                    valeur: abonnement.plan,
+                  ),
+                  _ChampLecture(
+                    icone: Icons.check_circle_outline,
+                    titre: "Statut",
+                    valeur: abonnement.statut,
+                  ),
+                  _ChampLecture(
+                    icone: Icons.event_outlined,
+                    titre: "Validite",
+                    valeur: abonnement.finAbonnementTexte,
+                  ),
+                  _ChampLecture(
+                    icone: Icons.payments_outlined,
+                    titre: "Montant",
+                    valeur: abonnement.montant == 0
+                        ? "Non renseigne"
+                        : "${abonnement.montant} FCFA",
+                  ),
+                  const _AlerteInfo(
+                    texte:
+                        "Le renouvellement se fait depuis le SaaS super admin.",
+                  ),
+                ],
+              );
+            },
           ),
         ];
       case SectionParametres.apparence:
@@ -351,6 +410,35 @@ class _DetailSectionParametresState extends State<_DetailSectionParametres> {
             ? messageSucces
             : widget.controller.erreur ?? "Operation impossible."),
         backgroundColor: succes ? ThemeQuinca.succes : ThemeQuinca.rupture,
+      ),
+    );
+  }
+}
+
+class _BoutonDeconnexion extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _BoutonDeconnexion({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: SizedBox(
+        width: 210,
+        child: OutlinedButton.icon(
+          onPressed: onPressed,
+          icon: const Icon(Icons.logout_rounded),
+          label: const Text("Se deconnecter"),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: ThemeQuinca.rupture,
+            side: const BorderSide(color: ThemeQuinca.rupture),
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -492,24 +580,27 @@ class _BoutonSauvegarde extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: loading ? null : onPressed,
-        icon: loading
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.save_outlined),
-        label: Text(loading ? "Enregistrement..." : texte),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: ThemeQuinca.bleuPrincipal,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    return Align(
+      alignment: Alignment.centerRight,
+      child: SizedBox(
+        width: 230,
+        child: ElevatedButton.icon(
+          onPressed: loading ? null : onPressed,
+          icon: loading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.save_outlined),
+          label: Text(loading ? "Enregistrement..." : texte),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ThemeQuinca.bleuPrincipal,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
       ),

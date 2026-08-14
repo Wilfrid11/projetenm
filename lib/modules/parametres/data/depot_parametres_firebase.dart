@@ -5,6 +5,52 @@ import '../../../coeur/firebase/firebase_collections.dart';
 import '../../auth/data/user.dart';
 import '../../auth/logique/telephone_utils.dart';
 
+class AbonnementBoutique {
+  final String plan;
+  final String statut;
+  final DateTime? finAbonnement;
+  final int montant;
+
+  const AbonnementBoutique({
+    required this.plan,
+    required this.statut,
+    required this.finAbonnement,
+    required this.montant,
+  });
+
+  String get finAbonnementTexte {
+    final date = finAbonnement;
+    if (date == null) return "Non definie";
+    return "${date.day.toString().padLeft(2, '0')}/"
+        "${date.month.toString().padLeft(2, '0')}/${date.year}";
+  }
+
+  factory AbonnementBoutique.fromMap(Map<String, dynamic>? map) {
+    if (map == null) {
+      return const AbonnementBoutique(
+        plan: "Mensuel",
+        statut: "actif",
+        finAbonnement: null,
+        montant: 0,
+      );
+    }
+
+    return AbonnementBoutique(
+      plan: map['plan'] as String? ??
+          map['typeAbonnement'] as String? ??
+          "Mensuel",
+      statut: map['abonnement'] as String? ??
+          map['statutAbonnement'] as String? ??
+          map['statut'] as String? ??
+          "actif",
+      finAbonnement: _dateDepuisFirestore(
+        map['finAbonnement'] ?? map['expireLe'],
+      ),
+      montant: (map['montantAbonnement'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
 class DepotParametresFirebase {
   final FirebaseFirestore _firestore;
   final firebase_auth.FirebaseAuth _auth;
@@ -31,6 +77,15 @@ class DepotParametresFirebase {
     });
 
     return userMisAJour;
+  }
+
+  Future<AbonnementBoutique> chargerAbonnement(String boutiqueId) async {
+    final snapshot = await _firestore
+        .collection(FirebaseCollections.boutiques)
+        .doc(boutiqueId)
+        .get();
+
+    return AbonnementBoutique.fromMap(snapshot.data());
   }
 
   Future<User> modifierInfosBoutique({
@@ -97,4 +152,12 @@ class DepotParametresFirebase {
     await userAuth.reauthenticateWithCredential(credential);
     await userAuth.updatePassword(nouveauMotDePasse);
   }
+}
+
+DateTime? _dateDepuisFirestore(dynamic value) {
+  if (value == null) return null;
+  if (value is Timestamp) return value.toDate();
+  if (value is DateTime) return value;
+  if (value is String) return DateTime.tryParse(value);
+  return null;
 }

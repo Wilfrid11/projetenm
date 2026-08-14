@@ -110,9 +110,8 @@ class _CataloguePageState extends State<CataloguePage> {
           nom: nom,
           categorie:
               ligne["cat"]!.text.isEmpty ? "General" : ligne["cat"]!.text,
-          uniteVente: ligne["unite"]!.text.isEmpty
-              ? "piece"
-              : ligne["unite"]!.text,
+          uniteVente:
+              ligne["unite"]!.text.isEmpty ? "piece" : ligne["unite"]!.text,
           quantite: int.tryParse(ligne["stock"]!.text.trim()) ?? 0,
           prixAchat: prixAchat,
           prixVente: prixVente,
@@ -178,11 +177,22 @@ class _CataloguePageState extends State<CataloguePage> {
         backgroundColor: ThemeQuinca.bleuPrincipal,
         foregroundColor: Colors.white,
         title: const Text("Catalogue"),
+        actions: [
+          IconButton(
+            tooltip: "Ajouter un produit",
+            onPressed: _enregistrement ? null : _ajouterLigne,
+            icon: const Icon(Icons.add_rounded, size: 30),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            _EnteteCatalogue(nombreProduits: _lignes.length),
+            _EnteteCatalogue(
+              nombreProduits: _lignes.length,
+              onAjouter: _enregistrement ? null : _ajouterLigne,
+            ),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
@@ -202,7 +212,6 @@ class _CataloguePageState extends State<CataloguePage> {
             ),
             _BarreActionsCatalogue(
               enregistrement: _enregistrement,
-              onAjouter: _ajouterLigne,
               onEnregistrer: _enregistrerTout,
             ),
           ],
@@ -214,8 +223,12 @@ class _CataloguePageState extends State<CataloguePage> {
 
 class _EnteteCatalogue extends StatelessWidget {
   final int nombreProduits;
+  final VoidCallback? onAjouter;
 
-  const _EnteteCatalogue({required this.nombreProduits});
+  const _EnteteCatalogue({
+    required this.nombreProduits,
+    required this.onAjouter,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -257,6 +270,15 @@ class _EnteteCatalogue extends StatelessWidget {
                   style: ThemeQuinca.corpsTexte,
                 ),
               ],
+            ),
+          ),
+          IconButton.filled(
+            tooltip: "Ajouter un produit",
+            onPressed: onAjouter,
+            icon: const Icon(Icons.add_rounded),
+            style: IconButton.styleFrom(
+              backgroundColor: ThemeQuinca.bleuPrincipal,
+              foregroundColor: Colors.white,
             ),
           ),
         ],
@@ -476,12 +498,10 @@ class _DropdownCatalogue extends StatelessWidget {
 
 class _BarreActionsCatalogue extends StatelessWidget {
   final bool enregistrement;
-  final VoidCallback onAjouter;
   final VoidCallback onEnregistrer;
 
   const _BarreActionsCatalogue({
     required this.enregistrement,
-    required this.onAjouter,
     required this.onEnregistrer,
   });
 
@@ -493,30 +513,16 @@ class _BarreActionsCatalogue extends StatelessWidget {
         color: Colors.white,
         border: Border(top: BorderSide(color: ThemeQuinca.bordure)),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: enregistrement ? null : onAjouter,
-              icon: const Icon(Icons.add),
-              label: const Text("Autre produit"),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: SizedBox(
+          width: 190,
+          child: BtnPrincipal(
+            texte: enregistrement ? "Enregistrement..." : "Enregistrer",
+            onPressed: onEnregistrer,
+            isLoading: enregistrement,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: BtnPrincipal(
-              texte: enregistrement ? "Enregistrement..." : "Enregistrer",
-              onPressed: onEnregistrer,
-              isLoading: enregistrement,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -543,7 +549,8 @@ InputDecoration _decorationCatalogue({
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: ThemeQuinca.bleuPrincipal, width: 1.5),
+      borderSide:
+          const BorderSide(color: ThemeQuinca.bleuPrincipal, width: 1.5),
     ),
   );
 }
